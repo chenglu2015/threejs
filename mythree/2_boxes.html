@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Boxes</title>
+		<script type="text/javascript" src="../libs/three.js"></script>
+		<script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
+		<script type="text/javascript" src="../libs/stats.js"></script>
+		<script type="text/javascript" src="../libs/dat.gui.js"></script>
+		<style >
+			body{
+				/* set margin to 0 and overflow to hidden, to use the complete page */
+
+				margin: 0;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<!-- Div which will hold the Output -->
+		<div id="WebGL-output">
+		</div>
+
+		<div id="Stats-output">
+		</div>
+
+		<!-- Javascript code that runs our Three.js examples -->
+		<script type="text/javascript">
+			//once everything is loaded, we run our Three.js stuff.
+			$(function () { 
+ 				var stats = initStats();
+ 				
+ 				//here we'll put the Three.js stuff
+ 				var scene = new THREE.Scene();
+
+ 				//add camera and renderer
+ 				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+ 				var renderer = new THREE.WebGLRenderer();
+ 				renderer.setClearColor(0xEEEEEE, 1.0);
+ 				renderer.setSize(window.innerWidth, window.innerHeight);
+ 				renderer.shadowMapEnabled = true;
+
+ 				//add Light
+ 				var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+ 				scene.add(ambientLight);
+
+ 				var spotLight = new THREE.SpotLight(0xffffff);
+ 				spotLight.castShadow = true;
+ 				spotLight.position.set(-40, 60, -10);
+ 				scene.add(spotLight);
+
+ 				//add plane
+ 				var planeGeo = new THREE.PlaneGeometry(60,40,1,1);
+ 				var planeMtr = new THREE.MeshLambertMaterial({color: 0xffffff});
+ 				var plane = new THREE.Mesh(planeGeo, planeMtr);
+ 				plane.rotation.x = -0.5 * Math.PI;
+		        plane.position.x = 0;
+		        plane.position.y = 0;
+		        plane.position.z = 0;
+		        plane.receiveShadow = true;
+		        scene.add(plane);
+
+
+		        camera.position.x = -30;
+		        camera.position.y = 40;
+		        camera.position.z = 30;
+		        camera.lookAt(scene.position);
+		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+		        var controls = new function() {
+		        	this.rotationSpeed = 0.02;
+		        	this.boxNum = 0;
+
+		        	this.addBox = function() {
+		        		var boxSize = Math.random() * 3;
+		        		var boxGeo = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+		        		var boxMtr = new THREE.MeshLambertMaterial({color: Math.random() * 0xffffff});
+		        		var box = new THREE.Mesh(boxGeo, boxMtr);
+		        		box.position.x = -30 + Math.random() * 60;
+		        		box.position.y = Math.random() * 10;
+		        		box.position.z = -20 + Math.random() * 40;
+		        		box.castShadow = true;
+		        		box.name = "box-" + this.boxNum;
+		        		scene.add(box);
+
+		        		this.boxNum ++;
+
+		        	};
+
+		        	this.removeBox = function() {
+		        		if(this.boxNum < 1){
+		        			return;
+		        		}
+		        		var name = "box-" + (this.boxNum - 1);
+		        		scene.remove(scene.getObjectByName(name));
+		        		this.boxNum --;
+		        	};
+		        }
+
+		        var gui = new dat.GUI();
+		        gui.add(controls, "rotationSpeed", 0, 0.1);
+		        gui.add(controls, "addBox");
+		        gui.add(controls, "removeBox");
+		        gui.add(controls, "boxNum").listen();
+
+		        //add fog and overrideMaterial
+		        // scene.fog = new THREE.Fog(0xffffff, 0.015, 100);
+		        scene.fog = new THREE.FogExp2(0xffffff, 0.01);
+
+		        scene.overrideMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
+
+		        //start render;
+		        render();
+
+		        function render(){
+		        	stats.update();
+
+		        	scene.traverse(function (e) {
+		        		if(e.name.indexOf("box") > -1){
+		        			e.rotation.x += controls.rotationSpeed;
+		                    e.rotation.y += controls.rotationSpeed;
+		                    e.rotation.z += controls.rotationSpeed;
+		        		}
+		        	});
+
+		        	requestAnimationFrame(render);
+		        	renderer.render(scene, camera);
+		        }
+			});
+
+			function initStats(){
+				var stats = new Stats();
+				stats.setMode(0);
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.lefe = '0px';
+				stats.domElement.style.top = '0px';
+				$("#Stats-output").append(stats.domElement);
+				return stats;
+			}
+
+		</script>
+
+	</body>
+</html>
