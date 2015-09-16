@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Light</title>
+		<script type="text/javascript" src="../libs/three.js"></script>
+		<script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
+		<script type="text/javascript" src="../libs/stats.js"></script>
+		<script type="text/javascript" src="../libs/dat.gui.js"></script>
+		<style >
+			body{
+				/* set margin to 0 and overflow to hidden, to use the complete page */
+
+				margin: 0;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<!-- Div which will hold the Output -->
+		<div id="WebGL-output">
+		</div>
+
+		<!-- Div which will show the stats -->
+		<div id="Stats-output">
+		</div>
+
+		<!-- Javascript code that runs our Three.js examples -->
+		<script type="text/javascript">
+			//once everything is loaded, we run our Three.js stuff.
+			$(function () { 
+ 				var stats = initStats();
+ 				
+ 				//here we'll put the Three.js stuff
+ 				var scene = new THREE.Scene();
+ 				
+ 				//add camera and renderer
+ 				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+ 				
+ 				var renderer = new THREE.WebGLRenderer();
+ 				renderer.setClearColor(0xEEEEEE, 1.0);
+ 				renderer.setSize(window.innerWidth, window.innerHeight);
+ 				renderer.shadowMapEnabled = true;
+
+ 				//add plane
+ 				var planeGeo = new THREE.PlaneGeometry(60,40,1,1);
+ 				var planeMtr = new THREE.MeshLambertMaterial({color: 0xffffff});
+ 				var plane = new THREE.Mesh(planeGeo, planeMtr);
+ 				plane.rotation.x = -0.5 * Math.PI;
+		        plane.position.x = 0;
+		        plane.position.y = 0;
+		        plane.position.z = 0;
+		        plane.receiveShadow = true;
+		        scene.add(plane);
+
+		        camera.position.x = -30;
+		        camera.position.y = 40;
+		        camera.position.z = 30;
+		        camera.lookAt(scene.position);
+		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+		        var boxGeo = new THREE.BoxGeometry(3, 3, 3);
+		        var boxMtr = new THREE.MeshLambertMaterial({color: 0xff00ff});
+		        var box = new THREE.Mesh(boxGeo, boxMtr);
+		        box.castShadow = true;
+		        box.position.set(-5, 5, 3);
+		        scene.add(box);
+
+
+
+ 				//add Light
+ 				//ambient light
+ 				var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+ 				scene.add(ambientLight);
+
+ 				//point light
+ 				var pointLight = new THREE.PointLight(0x123456);
+ 				scene.add(pointLight);
+ 				var sphere1 = new THREE.Mesh(new THREE.SphereGeometry(0.2,20,20), new THREE.MeshBasicMaterial({color: 0xfc00fc}));
+ 				sphere1.position.set(10, 10, 10);
+ 				scene.add(sphere1);
+
+ 				//spot light
+ 				var spotLight = new THREE.SpotLight(0xffffff);
+ 				spotLight.castShadow = true;
+ 				scene.add(spotLight);
+ 				var sphere2 = new THREE.Mesh(new THREE.SphereGeometry(0.2,20,20), new THREE.MeshBasicMaterial({color: 0x00fcfc}));
+ 				scene.add(sphere2);
+
+ 				//directional light
+ 				var directionalLight = new THREE.DirectionalLight(0xfc00fc);
+		        directionalLight.castShadow = true;
+ 				scene.add(directionalLight);
+ 				var sphere3 = new THREE.Mesh(new THREE.SphereGeometry(0.2,20,20), new THREE.MeshBasicMaterial({color: 0xfcfc00}));
+ 				scene.add(sphere3);
+
+ 				var controls = new function() {
+ 					this.ambientColor = "#0c0c0c";
+
+ 					this.pointLight = true;
+ 					this.pointX = 10;
+ 					this.pointY = 10;
+ 					this.pointZ = 10;
+ 					this.pointColor = "#123456";
+ 					this.pointDistance = 100;
+ 					this.pointIntensity = 0.6;
+
+ 					this.spotLight = true;
+ 					this.spotX = -10;
+ 					this.spotY = 10;
+ 					this.spotZ = -10;
+ 					this.spotShadowCameraNear = 2;
+ 					this.spotShadowCameraFar = 300;
+ 					this.spotShadowCameraFov = 90;
+ 					this.spotIntensity = 1;
+ 					this.spotTarget = "plane";
+ 					this.spotDebug = true;
+ 					this.spotColor = "#ffffff";
+
+ 					this.directionalLight = true;
+ 					this.directionalX = -30;
+ 					this.directionalY = 30
+ 					this.directionalZ = -10;
+			     	this.directionalShadowCameraNear = 2;
+			        this.directionalShadowCameraFar = 200;
+			        this.directionalShadowCameraLeft = -50;
+			        this.directionalShadowCameraRight = 50;
+			        this.directionalShadowCameraTop = 50;
+			        this.directionalShadowCameraBottom = -50;
+			        this.directionalDistance = 0;
+			        this.directionalIntensity = 0.5;
+			        this.directionalTarget = "plane";
+ 					this.directionalDebug = true;
+ 					this.directionalColor = "#fc00fc";
+
+ 				}
+
+ 				var gui = new dat.GUI();
+ 				gui.addColor(controls, "ambientColor").onChange(function (e) {
+ 					ambientLight.color = new THREE.Color(e);
+ 				});
+ 				var fpoint = gui.addFolder("pointLight");
+ 				fpoint.add(controls, "pointLight");
+ 				fpoint.add(controls, "pointX", -30, 30);
+ 				fpoint.add(controls, "pointY", 0, 30);
+ 				fpoint.add(controls, "pointZ", -30, 30);
+ 				fpoint.add(controls, "pointDistance", 0, 100);
+ 				fpoint.add(controls, "pointIntensity", 0, 5);
+ 				fpoint.addColor(controls, "pointColor").onChange(function (e) {
+ 					pointLight.color = new THREE.Color(e);
+ 				});
+ 				var fspot = gui.addFolder("spotLight");
+ 				fspot.add(controls, "spotLight");
+ 				fspot.add(controls, "spotX", -30, 30);
+ 				fspot.add(controls, "spotY", 0, 30);
+ 				fspot.add(controls, "spotZ", -30, 30);
+ 				fspot.add(controls, "spotShadowCameraNear", 0, 30);
+ 				fspot.add(controls, "spotShadowCameraFar", 50, 300);
+ 				fspot.add(controls, "spotShadowCameraFov", 0, 90);
+ 				fspot.add(controls, "spotIntensity", 0, 5);
+ 				fspot.add(controls, "spotDebug");
+ 				fspot.add(controls, "spotTarget", ["plane", "box"]).onChange(function (e){
+ 					switch(e){
+ 						case "plane":
+ 							spotLight.target = plane;
+ 							break;
+ 						case "box":
+ 							spotLight.target = box;
+ 							break;
+ 					}
+ 				});
+ 				fspot.addColor(controls, "spotColor").onChange(function (e){
+ 					spotLight.color = new THREE.Color(e);
+ 				});
+ 				var fdirectional = gui.addFolder("directionalLight");
+ 				fdirectional.add(controls, "directionalLight");
+ 				fdirectional.add(controls, "directionalX", -30, 30);
+ 				fdirectional.add(controls, "directionalY", 0, 30);
+ 				fdirectional.add(controls, "directionalZ", -30, 30);
+ 				fdirectional.add(controls, "directionalShadowCameraNear", 0, 30);
+ 				fdirectional.add(controls, "directionalShadowCameraFar", 50, 300);
+ 				fdirectional.add(controls, "directionalShadowCameraLeft", -50, 50);
+ 				fdirectional.add(controls, "directionalShadowCameraRight", -50, 50);
+ 				fdirectional.add(controls, "directionalShadowCameraTop", -50, 50);
+ 				fdirectional.add(controls, "directionalShadowCameraBottom", -50, 50);
+ 				fdirectional.add(controls, "directionalDistance", 0, 100);
+ 				fdirectional.add(controls, "directionalIntensity", 0, 3);
+ 				fdirectional.add(controls, "directionalDebug");
+ 				fdirectional.add(controls, "directionalTarget", ["plane", "box"]).onChange(function (e){
+ 					switch(e){
+ 						case "plane":
+ 							directionalLight.target = plane;
+ 							break;
+ 						case "box":
+ 							directionalLight.target = box;
+ 							break;
+ 					}
+ 				});
+ 				fdirectional.addColor(controls, "directionalColor").onChange(function (e){
+ 					directionalLight.color = new THREE.Color(e);
+ 				});
+
+
+ 				//add animation
+ 				render();
+ 				function render(){
+ 					stats.update();
+
+ 					pointLight.visible = controls.pointLight;
+ 					pointLight.position.set(controls.pointX, controls.pointY, controls.pointZ);
+ 					sphere1.position.set(controls.pointX, controls.pointY, controls.pointZ);
+ 					pointLight.distance = controls.pointDistance;
+ 					pointLight.intensity = controls.pointIntensity;
+
+ 					spotLight.visible = controls.spotLight;
+ 					spotLight.position.set(controls.spotX, controls.spotY, controls.spotZ);
+ 					sphere2.position.set(controls.spotX, controls.spotY, controls.spotZ);
+ 					spotLight.shadowCameraNear = controls.spotShadowCameraNear;
+ 					spotLight.shadowCameraFar = controls.spotShadowCameraFar;
+ 					spotLight.shadowCameraFov = controls.spotShadowCameraFov;
+ 					spotLight.intensity = controls.spotIntensity;
+ 					spotLight.shadowCameraVisible = controls.spotDebug;
+
+ 					directionalLight.visible = controls.directionalLight;
+ 					directionalLight.position.set(controls.directionalX, controls.directionalY, controls.directionalZ);
+ 					sphere3.position.set(controls.directionalX, controls.directionalY, controls.directionalZ);
+ 					directionalLight.shadowCameraNear = controls.directionalShadowCameraNear;
+ 					directionalLight.shadowCameraFar = controls.directionalShadowCameraFar;
+ 					directionalLight.shadowCameraLeft = controls.directionalShadowCameraLeft;
+ 					directionalLight.shadowCameraRight = controls.directionalShadowCameraRight;
+ 					directionalLight.shadowCameraTop = controls.directionalShadowCameraTop;
+ 					directionalLight.shadowCameraBottom = controls.directionalShadowCameraBottom;
+ 					directionalLight.distance = controls.directionalDistance;
+ 					directionalLight.intensity = controls.directionalIntensity;
+ 					directionalLight.shadowCameraVisible = controls.directionalDebug;
+
+ 					requestAnimationFrame(render);
+ 					renderer.render(scene, camera);
+ 				};
+
+			});
+
+			function initStats(){
+				var stats = new Stats();
+				stats.setMode(0);
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.lefe = '0px';
+				stats.domElement.style.top = '0px';
+				$("#Stats-output").append(stats.domElement);
+				return stats;
+			}
+
+		</script>
+
+	</body>
+</html>
