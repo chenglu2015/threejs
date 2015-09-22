@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+
+	<script type="text/javascript" src="../libs/three.js"></script>
+	<script type="text/javascript" src="../libs/helvetiker_regular.typeface.js"></script> 
+	<script type="text/javascript" src="../libs/OrbitControls.js"></script>
+
+</head>
+<body onload="init()">
+    <div id="mainCanvas"></div>
+</body> 
+
+<script>
+	
+	var orbit;
+
+	function init() {
+		var count = 0;  // counter
+		var x=0, y=0 ,z=0;  //rotate direct
+		var canvas = document.getElementById('mainCanvas');
+    	var renderer = new THREE.WebGLRenderer();
+		renderer.setClearColor(0xffffff); // white
+		renderer.setSize(1024, 768);
+
+		var scene = new THREE.Scene();
+
+		var camera = new THREE.PerspectiveCamera(45, 4 / 3, 1, 1000);
+		camera.position.set(4, 3, 6);
+		camera.lookAt(new THREE.Vector3(0, 0, 0));
+		// scene.add(camera);
+		document.getElementById("mainCanvas").appendChild(renderer.domElement);
+
+		orbit = new THREE.OrbitControls(camera, renderer.domElement);
+
+		var materials = [];
+		for (var i = 0; i < 6; ++i) {
+		    materials.push(new THREE.MeshBasicMaterial({
+		        map: THREE.ImageUtils.loadTexture('./image/' + i + '.png', {}, function() {
+		        	renderer.render(scene, camera);
+		        })
+		    }));
+		}
+
+		//mesh
+		var cubeGeometry = new THREE.CubeGeometry(1, 1, 1);
+		var faceMaterial = new THREE.MeshFaceMaterial(materials);
+		//上层cube
+		var cube1 = new THREE.Mesh(cubeGeometry, faceMaterial);
+		var cube2 = new THREE.Mesh(cubeGeometry, faceMaterial);
+		var cube3 = new THREE.Mesh(cubeGeometry, faceMaterial);
+		var cube4 = new THREE.Mesh(cubeGeometry, faceMaterial);
+		//下层cube
+		var cube5 = new THREE.Mesh(cubeGeometry, faceMaterial);
+		var cube6 = new THREE.Mesh(cubeGeometry, faceMaterial);
+		var cube7 = new THREE.Mesh(cubeGeometry, faceMaterial);
+		var cube8 = new THREE.Mesh(cubeGeometry, faceMaterial);
+		//position
+		cube1.position.x = -0.5;
+		cube1.position.y = 0.5;
+		cube1.position.z = 0.5;
+		scene.add(cube1);
+		cube2.position.x = 0.5;
+		cube2.position.y = 0.5;
+		cube2.position.z = 0.5;
+		scene.add(cube2);
+		cube3.position.x = -0.5;
+		cube3.position.y = 0.5;
+		cube3.position.z = -0.5;
+		scene.add(cube3);
+		cube4.position.x = 0.5;
+		cube4.position.y = 0.5;
+		cube4.position.z = -0.5;
+		scene.add(cube4);
+		cube5.position.x = -0.5;
+		cube5.position.y = -0.5;
+		cube5.position.z = 0.5;
+		scene.add(cube5);
+		cube6.position.x = 0.5;
+		cube6.position.y = -0.5;
+		cube6.position.z = 0.5;
+		scene.add(cube6);
+		cube7.position.x = -0.5;
+		cube7.position.y = -0.5;
+		cube7.position.z = -0.5;
+		scene.add(cube7);
+		cube8.position.x = 0.5;
+		cube8.position.y = -0.5;
+		cube8.position.z = -0.5;
+		scene.add(cube8);
+
+		var cubes = [[[cube1, cube2], [cube3, cube4]], [[cube5, cube6], [cube7, cube8]]];
+
+		//pivot
+		var pivot = new THREE.Object3D();
+		scene.add(pivot);
+
+		render();
+
+		function render(){
+
+			orbit.update();
+
+			requestAnimationFrame(render);
+ 			renderer.render(scene, camera);
+		}
+
+    	function animate() {
+		    var id = requestAnimationFrame(animate);
+		    
+		    pivot.rotation.x += x * Math.PI/30;
+		    pivot.rotation.y += y * Math.PI/30;
+		    pivot.rotation.z += z * Math.PI/30;
+		    renderer.render(scene, camera);
+		    count = count + 1;
+		    if(count >= 15){
+		    	console.log(x, y ,z);
+		    	restart();
+		    	cancelAnimationFrame(id);
+		    }
+		}
+
+
+
+		window.onclick = function(e) {  
+			if(count > 0 ){
+				return false;
+			}
+			for(var i = 0; i < 2; i++){
+				for(var j = 0; j < 2; j++){
+					for(var k = 0; k < 2; k++){
+						pivot.add(cubes[i][j][k]);
+					}
+				}
+			}
+			var position = getMousePosition(e);
+			console.log(position.x, position.y);
+			if(position.x < 600){
+				x = 1;
+			}
+			else if(position.x < 1000){
+				y = 1;			
+			}
+			else{
+				z = 1;
+			}
+			animate();
+			
+		}
+
+		var getMousePosition = function(e) {
+			e = e || window.event;
+		    var Ax = e.pageX || (e.clientX + (document.documentElement.scrollLeft || document.body.scrollLeft));
+		    var Ay= e.pageY || (e.clientY + (document.documentElement.scrollTop || document.body.scrollTop));
+		    return {'x':Ax, 'y':Ay};
+		}
+
+		var restart = function(){
+			count = 0;
+			x = 0;
+			y = 0;
+			z = 0;
+			// for(var cube in pivot.children){
+			// 	pivot.remove(cube);
+			// }
+		}
+
+	} 
+
+</script>
+
+<html>

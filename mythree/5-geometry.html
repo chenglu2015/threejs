@@ -2,12 +2,11 @@
 
 <html>
 	<head>
-		<title>Basic template</title>
+		<title>Geometry</title>
 		<script type="text/javascript" src="../libs/three.js"></script>
 		<script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
 		<script type="text/javascript" src="../libs/stats.js"></script>
 		<script type="text/javascript" src="../libs/dat.gui.js"></script>
-		<script type="text/javascript" src="../libs/OrbitControls.js"></script>
 		<style >
 			body{
 				/* set margin to 0 and overflow to hidden, to use the complete page */
@@ -29,9 +28,6 @@
 
 		<!-- Javascript code that runs our Three.js examples -->
 		<script type="text/javascript">
-
-			var orbit;
-
 			//once everything is loaded, we run our Three.js stuff.
 			$(function () { 
  				var stats = initStats();
@@ -48,7 +44,7 @@
  				renderer.shadowMapEnabled = true;
 
  				//add Light
- 				var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+ 				var ambientLight = new THREE.AmbientLight(0x5c5c5c);
  				scene.add(ambientLight);
 
  				var spotLight = new THREE.SpotLight(0xffffff);
@@ -74,13 +70,78 @@
 		        camera.lookAt(scene.position);
 		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
-		        orbit = new THREE.OrbitControls(camera, renderer.domElement);
+		        // assign two materials
+	            var meshMaterial = new THREE.MeshNormalMaterial();
+	            meshMaterial.side = THREE.DoubleSide;
+	            var wireFrameMat = new THREE.MeshBasicMaterial();
+	            wireFrameMat.wireframe = true;
 
+	            //add geometries
+	            //simple example. For more,to see the learning-threejs chapter 5 examples
+	            var planeGeom = new THREE.PlaneGeometry(10, 10, 2, 2);
+	            var circleGeom = new THREE.CircleGeometry(3, 10, 0, 2 * Math.PI);
+	            var ringGeom = new THREE.RingGeometry(10, 8, 5, 5, Math.PI);
+	            var boxGeom = new THREE.BoxGeometry(10, 10, 10, 5, 5, 5);
+	            var sphereGeom = new THREE.SphereGeometry(10, 20, 20);
+	            var cylinderGeom = new THREE.CylinderGeometry(5, 10, 10, 20);
+	            var torusGeom = new THREE.TorusGeometry(5, 5, 5, 5, 1.5 * Math.PI);
+
+	            function makeMesh(geom){
+	            	var _mesh = THREE.SceneUtils.createMultiMaterialObject(geom, [meshMaterial, wireFrameMat]);
+	            	_mesh.position.y = 10;
+	            	_mesh.name = "mesh";
+	            	scene.remove(scene.getObjectByName("mesh"));
+	            	scene.add(_mesh);
+	            	return _mesh;
+	            }
+
+	            var mesh = makeMesh(boxGeom);
+	            
+
+	            var controls = new function() {
+	            	this.geom = "box";
+	            	this.rotation = true;
+	            }
+
+	            var gui = new dat.GUI();
+	            gui.add(controls, "geom", ["plane", "circle", "ring", "box", "sphere", "cylinder", "torus"]).onChange(function (e){
+	            	switch(e){
+	            		case "plane":
+	            			mesh = makeMesh(planeGeom);
+	            			break;
+	            		case "circle":
+	            			mesh = makeMesh(circleGeom);
+	            			break;
+	            		case "ring":
+	            			mesh = makeMesh(ringGeom);
+	            			break;
+	            		case "box":
+	            			mesh = makeMesh(boxGeom);
+	            			break;
+	            		case "sphere":
+	            			mesh = makeMesh(sphereGeom);
+	            			break;
+	            		case "cylinder":
+	            			mesh = makeMesh(cylinderGeom);
+	            			break;
+	            		case "torus":
+	            			mesh = makeMesh(torusGeom);
+	            			break;
+	            	}
+	            });
+	            gui.add(controls, "rotation");
+
+           		
  				//add animation
+ 				step = 0.02
  				render();
  				function render(){
  					stats.update();
- 					orbit.update();
+
+ 					if(controls.rotation){
+ 						mesh.rotation.y += step;	
+ 					}
+ 					
 
  					requestAnimationFrame(render);
  					renderer.render(scene, camera);
