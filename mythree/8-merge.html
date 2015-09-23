@@ -31,6 +31,10 @@
 		<script type="text/javascript">
 
 			var orbit;
+			var raycaster;
+			var mouse;
+			var INTERSECTED;
+
 
 			//once everything is loaded, we run our Three.js stuff.
 			$(function () { 
@@ -65,7 +69,7 @@
 		        plane.position.y = 0;
 		        plane.position.z = 0;
 		        plane.receiveShadow = true;
-		        scene.add(plane);
+		        // scene.add(plane);
 
 
 		        camera.position.x = -30;
@@ -76,13 +80,57 @@
 
 		        orbit = new THREE.OrbitControls(camera, renderer.domElement);
 
+		        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 		        window.addEventListener( 'resize', onWindowResize, false );
+
+		        var geometry = new THREE.Geometry();
+		        var cubeMaterial = new THREE.MeshNormalMaterial({color: 0x00ff00, transparent: true, opacity: 0.5});
+
+		        var meshs = [];
+		        for(var i = 0; i < 20; i++){
+		        	var cubeMesh = addcube();
+                    cubeMesh.updateMatrix();
+                    geometry.merge(cubeMesh.geometry, cubeMesh.matrix);
+
+                    meshs.push(cubeMesh);
+		        }
+
+		        scene.add(new THREE.Mesh(geometry, cubeMaterial));
+
+		        raycaster = new THREE.Raycaster();
+		        mouse = new THREE.Vector2();
 
  				//add animation
  				render();
  				function render(){
  					stats.update();
  					orbit.update();
+
+ 					raycaster.setFromCamera(mouse, camera);
+ 					var intersects = raycaster.intersectObjects(meshs);
+
+ 					if(intersects.length > 0){
+						if(INTERSECTED != intersects[0].object) {
+							if(INTERSECTED){
+								INTERSECTED.scale.set(1, 1, 1);
+								scene.remove(scene.getObjectByName("INTERSECTED"));
+							}
+							INTERSECTED = intersects[0].object;
+							INTERSECTED.scale.set(5, 5, 5);
+							INTERSECTED.name = "INTERSECTED";
+							scene.add(INTERSECTED);
+							
+						}
+
+					}
+					else{
+						if(INTERSECTED){
+							INTERSECTED.scale.set(1, 1, 1);
+							scene.remove(scene.getObjectByName("INTERSECTED"));
+						}
+						INTERSECTED = null;
+					}
+
 
  					requestAnimationFrame(render);
  					renderer.render(scene, camera);
@@ -96,6 +144,32 @@
 					renderer.setSize( window.innerWidth, window.innerHeight );
 
 				}
+
+				function onDocumentMouseMove( event ) {
+
+					event.preventDefault();
+
+					mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+					mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				}
+
+				function addcube() {
+
+		            var cubeSize = 1.0;
+		            var cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+
+		            var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+		            cube.castShadow = true;
+
+		            // position the cube randomly in the scene
+		            cube.position.x = -60 + Math.round((Math.random() * 100));
+		            cube.position.y = Math.round((Math.random() * 10));
+		            cube.position.z = -150 + Math.round((Math.random() * 175));
+
+		            // add the cube to the scene
+		            return cube;
+		        }
 
 			});
 

@@ -2,7 +2,7 @@
 
 <html>
 	<head>
-		<title>Basic template</title>
+		<title>Particle</title>
 		<script type="text/javascript" src="../libs/three.js"></script>
 		<script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
 		<script type="text/javascript" src="../libs/stats.js"></script>
@@ -31,6 +31,10 @@
 		<script type="text/javascript">
 
 			var orbit;
+
+			var raycaster;
+			var mouse;
+			var INTERSECTED;
 
 			//once everything is loaded, we run our Three.js stuff.
 			$(function () { 
@@ -65,7 +69,7 @@
 		        plane.position.y = 0;
 		        plane.position.z = 0;
 		        plane.receiveShadow = true;
-		        scene.add(plane);
+		        // scene.add(plane);
 
 
 		        camera.position.x = -30;
@@ -76,7 +80,40 @@
 
 		        orbit = new THREE.OrbitControls(camera, renderer.domElement);
 
+		        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 		        window.addEventListener( 'resize', onWindowResize, false );
+
+		        var geom = new THREE.Geometry();
+		        var cloudMtr = new THREE.ParticleBasicMaterial({
+		        	color: 0x00ff00,
+		        	size: 1
+		        });
+
+
+		        var material = new THREE.SpriteMaterial({color: 0x00ff00});
+
+				var range = 1;		        
+		        for(var i = 0; i < 10; i++){
+		        	// var sprite = new THREE.Sprite(material);
+		        	// sprite.position.set(Math.random() * range - range / 2, Math.random() * range - range / 2, Math.random() * range - range / 2);
+		        	// scene.add(sprite);
+
+		        	var particle = new THREE.Vector3(Math.random() * range - range / 2, Math.random() * range - range / 2,
+		        		Math.random() * range - range / 2);
+		        	geom.vertices.push(particle);
+		        }
+
+		        // geom = new THREE.SphereGeometry(10, 50, 50);
+
+		        var cloud = new THREE.ParticleSystem(geom, cloudMtr);
+	            cloud.name = "particles";
+	            scene.add(cloud);
+
+	            // geom.vertices[0].position.x += 10;
+
+		        raycaster = new THREE.Raycaster();
+		        mouse = new THREE.Vector2();
+
 
  				//add animation
  				render();
@@ -84,16 +121,45 @@
  					stats.update();
  					orbit.update();
 
+ 					raycaster.setFromCamera(mouse, camera);
+ 					var intersects = raycaster.intersectObjects(scene.children);
+
+ 					if(intersects.length > 0){
+						if(INTERSECTED != intersects[0].object) {
+							if(INTERSECTED){
+								INTERSECTED.scale.set(1, 1, 1);
+							}
+							INTERSECTED = intersects[0].object;
+							INTERSECTED.scale.set(5, 5, 5);
+						}
+					}
+					else{
+						if(INTERSECTED){
+							INTERSECTED.scale.set(1, 1, 1);
+						}
+						INTERSECTED = null;
+					}
+
  					requestAnimationFrame(render);
  					renderer.render(scene, camera);
  				};
 
- 				function onWindowResize() {
+
+				function onWindowResize() {
 
 					camera.aspect = window.innerWidth / window.innerHeight;
 					camera.updateProjectionMatrix();
 
 					renderer.setSize( window.innerWidth, window.innerHeight );
+
+				}
+
+				function onDocumentMouseMove( event ) {
+
+					event.preventDefault();
+
+					mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+					mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
 				}
 
@@ -108,7 +174,6 @@
 				$("#Stats-output").append(stats.domElement);
 				return stats;
 			}
-
 
 
 		</script>
