@@ -4,8 +4,14 @@
 
 	<script type="text/javascript" src="../libs/three.js"></script>
 	<script type="text/javascript" src="../libs/helvetiker_regular.typeface.js"></script> 
-	<script type="text/javascript" src="../libs/OrbitControls.js"></script>
+	<style >
+		body{
+			/* set margin to 0 and overflow to hidden, to use the complete page */
 
+			margin: 0;
+			overflow: hidden;
+		}
+	</style>
 </head>
 <body onload="init()">
     <div id="mainCanvas"></div>
@@ -13,26 +19,32 @@
 
 <script>
 	
-	var orbit;
-
 	function init() {
+		//counters
+		var i,j,k;
+
+		//to save all cubes by position
+		var cubes = [];
+
+		var raycaster = new THREE.Raycaster();	
+		var mouse = new THREE.Vector2();
+		var INTERSECTED;
+
 		var count = 0;  // counter
 		var x=0, y=0 ,z=0;  //rotate direct
-		var canvas = document.getElementById('mainCanvas');
     	var renderer = new THREE.WebGLRenderer();
-		renderer.setClearColor(0xffffff); // white
-		renderer.setSize(1024, 768);
+		renderer.setClearColor(0xEEEEEE, 1.0);
+		renderer.setSize(window.innerWidth, window.innerHeight);
+		renderer.shadowMapEnabled = true;
 
 		var scene = new THREE.Scene();
-
-		var camera = new THREE.PerspectiveCamera(45, 4 / 3, 1, 1000);
+		var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 		camera.position.set(4, 3, 6);
 		camera.lookAt(new THREE.Vector3(0, 0, 0));
-		// scene.add(camera);
 		document.getElementById("mainCanvas").appendChild(renderer.domElement);
 
-		orbit = new THREE.OrbitControls(camera, renderer.domElement);
-
+		window.addEventListener( 'resize', onWindowResize, false );
+		//add material
 		var materials = [];
 		for (var i = 0; i < 6; ++i) {
 		    materials.push(new THREE.MeshBasicMaterial({
@@ -45,51 +57,17 @@
 		//mesh
 		var cubeGeometry = new THREE.CubeGeometry(1, 1, 1);
 		var faceMaterial = new THREE.MeshFaceMaterial(materials);
-		//上层cube
-		var cube1 = new THREE.Mesh(cubeGeometry, faceMaterial);
-		var cube2 = new THREE.Mesh(cubeGeometry, faceMaterial);
-		var cube3 = new THREE.Mesh(cubeGeometry, faceMaterial);
-		var cube4 = new THREE.Mesh(cubeGeometry, faceMaterial);
-		//下层cube
-		var cube5 = new THREE.Mesh(cubeGeometry, faceMaterial);
-		var cube6 = new THREE.Mesh(cubeGeometry, faceMaterial);
-		var cube7 = new THREE.Mesh(cubeGeometry, faceMaterial);
-		var cube8 = new THREE.Mesh(cubeGeometry, faceMaterial);
-		//position
-		cube1.position.x = -0.5;
-		cube1.position.y = 0.5;
-		cube1.position.z = 0.5;
-		scene.add(cube1);
-		cube2.position.x = 0.5;
-		cube2.position.y = 0.5;
-		cube2.position.z = 0.5;
-		scene.add(cube2);
-		cube3.position.x = -0.5;
-		cube3.position.y = 0.5;
-		cube3.position.z = -0.5;
-		scene.add(cube3);
-		cube4.position.x = 0.5;
-		cube4.position.y = 0.5;
-		cube4.position.z = -0.5;
-		scene.add(cube4);
-		cube5.position.x = -0.5;
-		cube5.position.y = -0.5;
-		cube5.position.z = 0.5;
-		scene.add(cube5);
-		cube6.position.x = 0.5;
-		cube6.position.y = -0.5;
-		cube6.position.z = 0.5;
-		scene.add(cube6);
-		cube7.position.x = -0.5;
-		cube7.position.y = -0.5;
-		cube7.position.z = -0.5;
-		scene.add(cube7);
-		cube8.position.x = 0.5;
-		cube8.position.y = -0.5;
-		cube8.position.z = -0.5;
-		scene.add(cube8);
-
-		var cubes = [[[cube1, cube2], [cube3, cube4]], [[cube5, cube6], [cube7, cube8]]];
+		//init magic box
+		for(i = 0; i < 2; i++){
+			for(j = 0; j < 2; j++){
+				for(k = 0; k < 2; k++){
+					var cube = new THREE.Mesh(cubeGeometry, faceMaterial);
+					cube.position.set(-0.5 + i, -0.5 + j, -0.5 + k);
+					cubes[i*4 + j* 2 + k] = cube;
+					scene.add(cube);
+				}
+			}
+		}
 
 		//pivot
 		var pivot = new THREE.Object3D();
@@ -99,7 +77,19 @@
 
 		function render(){
 
-			orbit.update();
+			raycaster.setFromCamera(mouse, camera);
+
+			var intersects = raycaster.intersectObjects(cubes);
+
+			if(INTERSECTED){
+				INTERSECTED.material.transparent = false;
+				INTERSECTED.material.opacity = 1;
+			}
+			INTERSECTED = null;
+
+			if(intersects.length > 0){
+				INTERSECTED = intersects[0].object;
+			}
 
 			requestAnimationFrame(render);
  			renderer.render(scene, camera);
@@ -126,24 +116,13 @@
 			if(count > 0 ){
 				return false;
 			}
-			for(var i = 0; i < 2; i++){
-				for(var j = 0; j < 2; j++){
-					for(var k = 0; k < 2; k++){
-						pivot.add(cubes[i][j][k]);
-					}
-				}
+
+			if(INTERSECTED){
+
 			}
-			var position = getMousePosition(e);
-			console.log(position.x, position.y);
-			if(position.x < 600){
-				x = 1;
-			}
-			else if(position.x < 1000){
-				y = 1;			
-			}
-			else{
-				z = 1;
-			}
+
+
+			
 			animate();
 			
 		}
@@ -163,6 +142,24 @@
 			// for(var cube in pivot.children){
 			// 	pivot.remove(cube);
 			// }
+		}
+
+		function onWindowResize() {
+
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+
+			renderer.setSize( window.innerWidth, window.innerHeight );
+
+		}
+
+		window.onmousemove = function onDocumentMouseMove( event ) {
+
+			event.preventDefault();
+
+			mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
 		}
 
 	} 
