@@ -1,182 +1,343 @@
 <!DOCTYPE html>
-
 <html>
-	<head>
-		<title>Particle</title>
-		<script type="text/javascript" src="../libs/three.js"></script>
-		<script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
-		<script type="text/javascript" src="../libs/stats.js"></script>
-		<script type="text/javascript" src="../libs/dat.gui.js"></script>
-		<script type="text/javascript" src="../libs/OrbitControls.js"></script>
-		<style >
-			body{
-				/* set margin to 0 and overflow to hidden, to use the complete page */
+<head>
+	<meta charset="UTF-8">
+	<title>canvas 元素示例</title>
+</head>
+<body>
+	<h1>canvas 元素示例 </h1>
+	<table border="1">
+		<tr>
+			<td>
+				<canvas id="canvas1" width="400" height="300"></canvas>
+			</td>
+			<td>
+				<canvas id="canvas2" width="400" height="300"></canvas>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<canvas id="canvas3" width="400" height="300"></canvas>
+			</td>
+			<td>
+				<canvas id="canvas4" width="400" height="300"></canvas>
+			</td>
+		</tr>
+		<tr>
+			<button onclick="canvas1()" type="button">canvas1</button>&nbsp;&nbsp;
+			<button onclick="canvas2()" type="button">canvas2</button>&nbsp;&nbsp;
+			<button onclick="canvas3()" type="button">canvas3</button>&nbsp;&nbsp;
+			<button onclick="canvas4()" type="button">canvas4</button>&nbsp;&nbsp;
+			<button onclick="stop()" type="button">stop</button>&nbsp;&nbsp;
+			<button onclick="clearCanvas()" type="button">clear</button>&nbsp;&nbsp;
+		</tr>
+		
+	</table>
+	
+</body>
+<script type="text/javascript">
 
-				margin: 0;
-				overflow: hidden;
-			}
-		</style>
-	</head>
-	<body>
+	// Framework.js
+	var canvas, ctx, isContinue, timeoutID;
 
-		<!-- Div which will hold the Output -->
-		<div id="WebGL-output">
-		</div>
+	function start(canvasName, func) {
+	    if (timeoutID)
+	        stop();
 
-		<!-- Div which will show the stats -->
-		<div id="Stats-output">
-		</div>
+	    canvas = document.getElementById(canvasName);
+	    ctx = canvas.getContext("2d");
+	    isContinue = true;
 
-		<!-- Javascript code that runs our Three.js examples -->
-		<script type="text/javascript">
+	    var loop = function() {
+	        func();
+	        if (isContinue)
+	            timeoutID = setTimeout(loop, 10);
+	    }
 
-			var orbit;
+	    loop();
+	}
 
-			var raycaster;
-			var mouse;
-			var INTERSECTED;
+	function stop() {
+	    clearTimeout(timeoutID);
+	    isContinue = false;
+	}
 
-			//once everything is loaded, we run our Three.js stuff.
-			$(function () { 
- 				var stats = initStats();
- 				
- 				//here we'll put the Three.js stuff
- 				var scene = new THREE.Scene();
- 				
- 				//add camera and renderer
- 				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
- 				
- 				var renderer = new THREE.WebGLRenderer();
- 				renderer.setClearColor(0xEEEEEE, 1.0);
- 				renderer.setSize(window.innerWidth, window.innerHeight);
- 				renderer.shadowMapEnabled = true;
+	function clearCanvas() {
+	    if (ctx != null)
+	        ctx.clearRect(0, 0, canvas.width, canvas.height);
+	}
 
- 				//add Light
- 				var ambientLight = new THREE.AmbientLight(0x0c0c0c);
- 				scene.add(ambientLight);
+	// Vector2.js
+	Vector2 = function(x, y) { this.x = x; this.y = y; };
 
- 				var spotLight = new THREE.SpotLight(0xffffff);
- 				spotLight.castShadow = true;
- 				spotLight.position.set(-40, 60, -10);
- 				scene.add(spotLight);
+	Vector2.prototype = {
+	    copy: function() { return new Vector2(this.x, this.y); },
+	    length: function() { return Math.sqrt(this.x * this.x + this.y * this.y); },
+	    sqrLength: function() { return this.x * this.x + this.y * this.y; },
+	    normalize: function() { var inv = 1 / this.length(); return new Vector2(this.x * inv, this.y * inv); },
+	    negate: function() { return new Vector2(-this.x, -this.y); },
+	    add: function(v) { return new Vector2(this.x + v.x, this.y + v.y); },
+	    subtract: function(v) { return new Vector2(this.x - v.x, this.y - v.y); },
+	    multiply: function(f) { return new Vector2(this.x * f, this.y * f); },
+	    divide: function(f) { var invf = 1 / f; return new Vector2(this.x * invf, this.y * invf); },
+	    dot: function(v) { return this.x * v.x + this.y * v.y; }
+	};
 
- 				//add plane
- 				var planeGeo = new THREE.PlaneGeometry(60,40,1,1);
- 				var planeMtr = new THREE.MeshLambertMaterial({color: 0xffffff});
- 				var plane = new THREE.Mesh(planeGeo, planeMtr);
- 				plane.rotation.x = -0.5 * Math.PI;
-		        plane.position.x = 0;
-		        plane.position.y = 0;
-		        plane.position.z = 0;
-		        plane.receiveShadow = true;
-		        // scene.add(plane);
+	Vector2.zero = new Vector2(0, 0);
+
+	// Color.js
+	Color = function(r, g, b) { this.r = r; this.g = g; this.b = b };
+
+	Color.prototype = {
+	    copy: function() { return new Color(this.r, this.g, this.b); },
+	    add: function(c) { return new Color(this.r + c.r, this.g + c.g, this.b + c.b); },
+	    multiply: function(s) { return new Color(this.r * s, this.g * s, this.b * s); },
+	    modulate: function(c) { return new Color(this.r * c.r, this.g * c.g, this.b * c.b); },
+	    saturate: function() { this.r = Math.min(this.r, 1); this.g = Math.min(this.g, 1); this.b = Math.min(this.b, 1); }
+	};
+
+	Color.black = new Color(0, 0, 0);
+	Color.white = new Color(1, 1, 1);
+	Color.red = new Color(1, 0, 0);
+	Color.green = new Color(0, 1, 0);
+	Color.blue = new Color(0, 0, 1);
+	Color.yellow = new Color(1, 1, 0);
+	Color.cyan = new Color(0, 1, 1);
+	Color.purple = new Color(1, 0, 1);
+
+	// Particle.js
+	Particle = function(position, velocity, life, color, size) {
+	    this.position = position;
+	    this.velocity = velocity;
+	    this.acceleration = Vector2.zero;
+	    this.age = 0;
+	    this.life = life;
+	    this.color = color;
+	    this.size = size;
+	};
+
+	// ParticleSystem.js
+	function ParticleSystem() {
+	    // Private fields
+	    var that = this;
+	    var particles = new Array();
+
+	    // Public fields
+	    this.gravity = new Vector2(0, 100);
+	    this.effectors = new Array();
+
+	    // Public methods
+
+	    this.emit = function(particle) {
+	        particles.push(particle);
+	    };
+
+	    this.simulate = function(dt) {
+	        aging(dt);
+	        applyGravity();
+	        applyEffectors();
+	        kinematics(dt);
+	    };
+
+	    this.render = function(ctx) {
+	        for (var i in particles) {
+	            var p = particles[i];
+	            var alpha = 1 - p.age / p.life;
+	            ctx.fillStyle = "rgba("
+	                + Math.floor(p.color.r * 255) + ","
+	                + Math.floor(p.color.g * 255) + ","
+	                + Math.floor(p.color.b * 255) + ","
+	                + alpha.toFixed(2) + ")";
+	            ctx.beginPath();
+	            ctx.arc(p.position.x, p.position.y, p.size, 0, Math.PI * 2, true);
+	            ctx.closePath();
+	            ctx.fill();
+	        }
+	    }
+
+	    // Private methods
+
+	    function aging(dt) {
+	        for (var i = 0; i < particles.length; ) {
+	            var p = particles[i];
+	            p.age += dt;
+	            if (p.age >= p.life)
+	                kill(i);
+	            else
+	                i++;
+	        }
+	    }
+
+	    function kill(index) {
+	        if (particles.length > 1)
+	            particles[index] = particles[particles.length - 1];
+	        particles.pop();
+	    }
+
+	    function applyGravity() {
+	        for (var i in particles)
+	            particles[i].acceleration = that.gravity;
+	    }
+
+	    function applyEffectors() {
+	        for (var j in that.effectors) {
+	            var apply = that.effectors[j].apply;
+	            for (var i in particles)
+	                apply(particles[i]);
+	        }
+	    }
+
+	    function kinematics(dt) {
+	        for (var i in particles) {
+	            var p = particles[i];
+	            p.position = p.position.add(p.velocity.multiply(dt));
+	            p.velocity = p.velocity.add(p.acceleration.multiply(dt));
+	        }
+	    }
+	}
+
+	// ChamberBox.js
+	/* 
+	* @requires Vector2, Particle
+	*/
+	function ChamberBox(x1, y1, x2, y2) {
+	    this.apply = function(particle) {
+	        if (particle.position.x - particle.size < x1 || particle.position.x + particle.size > x2)
+	            particle.velocity.x = -particle.velocity.x;
+
+	        if (particle.position.y - particle.size < y1 || particle.position.y + particle.size > y2)
+	            particle.velocity.y = -particle.velocity.y;
+	    };
+	}
 
 
-		        camera.position.x = -30;
-		        camera.position.y = 40;
-		        camera.position.z = 30;
-		        camera.lookAt(scene.position);
-		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
+	function canvas1() {
+		
+		var position = new Vector2(10, 200);
+		var velocity = new Vector2(50, -50);
+		var acceleration = new Vector2(0, 10);
+		var dt = 0.1;
 
-		        orbit = new THREE.OrbitControls(camera, renderer.domElement);
+		function step() {
+		    position = position.add(velocity.multiply(dt));
+		    velocity = velocity.add(acceleration.multiply(dt));
 
-		        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-		        window.addEventListener( 'resize', onWindowResize, false );
+		    ctx.strokeStyle = "#000000";
+		    ctx.fillStyle = "#FFFFFF";
+		    ctx.beginPath();
+		    ctx.arc(position.x, position.y, 5, 0, Math.PI*2, true); 
+		    ctx.closePath();
+		    ctx.fill();
+		    ctx.stroke();
+		}
+		    
+		start("canvas1", step);
 
-		        var geom = new THREE.Geometry();
-		        var cloudMtr = new THREE.ParticleBasicMaterial({
-		        	color: 0x00ff00,
-		        	size: 1
-		        });
+	}
+
+	function canvas2(){
+
+		var ps = new ParticleSystem();
+		var dt = 0.01;
+
+		function sampleDirection() {
+		    var theta = Math.random() * 2 * Math.PI;
+		    return new Vector2(Math.cos(theta), Math.sin(theta));
+		}
+
+		function step() {
+		    ps.emit(new Particle(new Vector2(200, 100), sampleDirection().multiply(100), 1, Color.red, 5));
+		    ps.simulate(dt);
+
+		    clearCanvas();
+		    ps.render(ctx);
+		}
+
+		start("canvas2", step);
+	}
+
+	function canvas3(){
+		var ps = new ParticleSystem();
+		ps.effectors.push(new ChamberBox(0, 0, 400, 400)); // 最重要是多了这语句
+		var dt = 0.01;
+
+		function sampleDirection(angle1, angle2) {
+		    var t = Math.random();
+		    var theta = angle1 * t + angle2 * (1 - t);
+		    return new Vector2(Math.cos(theta), Math.sin(theta));
+		}
+
+		function sampleColor(color1, color2) {
+		    var t = Math.random();
+		    return color1.multiply(t).add(color2.multiply(1 - t));
+		}
+
+		function step() {
+		    ps.emit(new Particle(new Vector2(200, 100), sampleDirection(Math.PI * 1.75, Math.PI * 2).multiply(250), 3, sampleColor(Color.blue, Color.purple), 5));
+		    ps.simulate(dt);
+
+		    ctx.fillStyle="rgba(0, 0, 0, 0.1)";
+		    ctx.fillRect(0,0,canvas.width,canvas.height);
+		    ps.render(ctx);
+		}
+
+		start("canvas3", step);
+
+	}
+
+	function canvas4(){
+		var ps = new ParticleSystem();
+		ps.effectors.push(new ChamberBox(0, 0, 400, 400));
+		var dt = 0.01;
+		var oldMousePosition = Vector2.zero, newMousePosition = Vector2.zero;
+
+		function sampleDirection(angle1, angle2) {
+		    var t = Math.random();
+		    var theta = angle1 * t + angle2 * (1 - t);
+		    return new Vector2(Math.cos(theta), Math.sin(theta));
+		}
+
+		function sampleColor(color1, color2) {
+		    var t = Math.random();
+		    return color1.multiply(t).add(color2.multiply(1 - t));
+		}
+
+		function sampleNumber(value1, value2) {
+		    var t = Math.random();
+		    return value1 * t + value2 * (1 - t);
+		}
+
+		function step() {
+		    var velocity = newMousePosition.subtract(oldMousePosition).multiply(10);
+		    velocity = velocity.add(sampleDirection(0, Math.PI * 2).multiply(20));    
+		    var color = sampleColor(Color.red, Color.yellow);
+		    var life = sampleNumber(1, 2);    
+		    var size = sampleNumber(2, 4);
+		    ps.emit(new Particle(newMousePosition, velocity, life, color, size));
+		    oldMousePosition = newMousePosition;
+		    
+		    ps.simulate(dt);
+
+		    ctx.fillStyle="rgba(0, 0, 0, 0.1)";
+		    ctx.fillRect(0,0,canvas.width,canvas.height);
+		    ps.render(ctx);
+		}
+
+		start("canvas4", step);
+
+		canvas.onmousemove = function(e) {
+		    if (e.layerX || e.layerX == 0) { // Firefox 
+		        e.target.style.position='relative';
+		        newMousePosition = new Vector2(e.layerX, e.layerY);
+		    }
+		    else
+		        newMousePosition = new Vector2(e.offsetX, e.offsetY);
+		};
+
+	}
 
 
-		        var material = new THREE.SpriteMaterial({color: 0x00ff00});
 
-				var range = 1;		        
-		        for(var i = 0; i < 10; i++){
-		        	// var sprite = new THREE.Sprite(material);
-		        	// sprite.position.set(Math.random() * range - range / 2, Math.random() * range - range / 2, Math.random() * range - range / 2);
-		        	// scene.add(sprite);
+</script>
 
-		        	var particle = new THREE.Vector3(Math.random() * range - range / 2, Math.random() * range - range / 2,
-		        		Math.random() * range - range / 2);
-		        	geom.vertices.push(particle);
-		        }
-
-		        // geom = new THREE.SphereGeometry(10, 50, 50);
-
-		        var cloud = new THREE.ParticleSystem(geom, cloudMtr);
-	            cloud.name = "particles";
-	            scene.add(cloud);
-
-	            // geom.vertices[0].position.x += 10;
-
-		        raycaster = new THREE.Raycaster();
-		        mouse = new THREE.Vector2();
-
-
- 				//add animation
- 				render();
- 				function render(){
- 					stats.update();
- 					orbit.update();
-
- 					raycaster.setFromCamera(mouse, camera);
- 					var intersects = raycaster.intersectObjects(scene.children);
-
- 					if(intersects.length > 0){
-						if(INTERSECTED != intersects[0].object) {
-							if(INTERSECTED){
-								INTERSECTED.scale.set(1, 1, 1);
-							}
-							INTERSECTED = intersects[0].object;
-							INTERSECTED.scale.set(5, 5, 5);
-						}
-					}
-					else{
-						if(INTERSECTED){
-							INTERSECTED.scale.set(1, 1, 1);
-						}
-						INTERSECTED = null;
-					}
-
- 					requestAnimationFrame(render);
- 					renderer.render(scene, camera);
- 				};
-
-
-				function onWindowResize() {
-
-					camera.aspect = window.innerWidth / window.innerHeight;
-					camera.updateProjectionMatrix();
-
-					renderer.setSize( window.innerWidth, window.innerHeight );
-
-				}
-
-				function onDocumentMouseMove( event ) {
-
-					event.preventDefault();
-
-					mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-					mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-
-				}
-
-			});
-
-			function initStats(){
-				var stats = new Stats();
-				stats.setMode(0);
-				stats.domElement.style.position = 'absolute';
-				stats.domElement.style.lefe = '0px';
-				stats.domElement.style.top = '0px';
-				$("#Stats-output").append(stats.domElement);
-				return stats;
-			}
-
-
-		</script>
-
-	</body>
 </html>

@@ -93,12 +93,33 @@
                     geometry.merge(cubeMesh.geometry, cubeMesh.matrix);
 
                     meshs.push(cubeMesh);
+                    // scene.add(cubeMesh);
 		        }
 
-		        scene.add(new THREE.Mesh(geometry, cubeMaterial));
+		        // scene.add(new THREE.Mesh(geometry, cubeMaterial));
+
+		        console.log(meshs);
 
 		        raycaster = new THREE.Raycaster();
 		        mouse = new THREE.Vector2();
+
+		        var controls = new function(){
+		        	this.visible = false;
+		        }
+
+		        var gui = new dat.GUI();
+		        gui.add(controls, "visible").onChange(function (e){
+	        		for(var i = 0; i < meshs.length; i++){
+	        			if(e){
+							scene.add(meshs[i]);
+	        			}
+	        			else{
+	        				scene.remove(meshs[i]);
+	        			}
+	        			
+	        		}
+
+		        })
 
  				//add animation
  				render();
@@ -114,12 +135,13 @@
 						if(INTERSECTED != intersects[0].object) {
 							if(INTERSECTED){
 								INTERSECTED.scale.set(1, 1, 1);
-								scene.remove(scene.getObjectByName("INTERSECTED"));
+								// scene.remove(scene.getObjectByName("INTERSECTED"));
 							}
 							INTERSECTED = intersects[0].object;
-							INTERSECTED.scale.set(5, 5, 5);
+							INTERSECTED.scale.set(3, 3, 3);
 							INTERSECTED.name = "INTERSECTED";
-							scene.add(INTERSECTED);
+							// scene.add(INTERSECTED);
+							console.log(INTERSECTED);
 							
 						}
 
@@ -127,7 +149,7 @@
 					else{
 						if(INTERSECTED){
 							INTERSECTED.scale.set(1, 1, 1);
-							scene.remove(scene.getObjectByName("INTERSECTED"));
+							// scene.remove(scene.getObjectByName("INTERSECTED"));
 						}
 						INTERSECTED = null;
 					}
@@ -164,9 +186,9 @@
 		            cube.castShadow = true;
 
 		            // position the cube randomly in the scene
-		            cube.position.x = -60 + Math.round((Math.random() * 100));
+		            cube.position.x = -5 + Math.round((Math.random() * 10));
 		            cube.position.y = Math.round((Math.random() * 10));
-		            cube.position.z = -150 + Math.round((Math.random() * 175));
+		            cube.position.z = -5 + Math.round((Math.random() * 10));
 
 		            // add the cube to the scene
 		            return cube;
