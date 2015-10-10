@@ -109,9 +109,9 @@
 
 			void main() {
 
-				gl_FragColor = vec4( color * vColor, 1.0 );
+				// gl_FragColor = vec4( color * vColor, 1.0 );
 
-				gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+				gl_FragColor =  texture2D( texture, gl_PointCoord );
 
 				if ( gl_FragColor.a < ALPHATEST ) discard;
 
@@ -146,7 +146,7 @@
  				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
  				
  				var renderer = new THREE.WebGLRenderer();
- 				renderer.setClearColor(0xEEEEEE, 1.0);
+ 				renderer.setClearColor(0x333333, 1.0);
  				renderer.setSize(window.innerWidth, window.innerHeight);
  				renderer.shadowMapEnabled = true;
 
@@ -169,7 +169,7 @@
 				trackball.zoomSpeed = 0.1;
 				trackball.panSpeed = 0.01;
 				trackball.minDistance = 330;
-				trackball.maxDistance = 400;
+				trackball.maxDistance = 600;
 
 
 		        var geom = new THREE.Geometry();
@@ -181,7 +181,7 @@
 
 				uniforms = {
 					color:   { type: "c", value: new THREE.Color( 0xffffff ) },
-					texture: { type: "t", value: THREE.ImageUtils.loadTexture( "image/sprites/circle.png" ) }
+					texture: { type: "t", value: generateSprite() }
 					
 				};
 
@@ -196,7 +196,7 @@
 
 				var radius = 300;
 				var rand = 30;		        
-		        for(var i = 0; i < 500000; i++){
+		        for(var i = 0; i < 10000; i++){
 		        	var particle = initParticle(radius, rand);
 		        	geom.vertices.push(particle);
 		        }
@@ -211,7 +211,7 @@
 
 				for( var v = 0,  vl = vertices.length; v < vl; v++ ) {
 					values_size[ v ] = PARTICLE_SIZE;
-					values_color[ v ] = new THREE.Color().setHSL( 0.01 + 0.1 * ( v / vl ), 1.0, 0.5 );
+					values_color[ v ] = new THREE.Color().setHSL( 1, 0.5, 0.5 );
 				}
 
 	            scene.add(cloud);
@@ -326,6 +326,29 @@
 			function showModal(){
 				$("#infoModal").modal("show");
 			}
+
+			// from THREE.js examples
+	        function generateSprite() {
+
+	            var canvas = document.createElement('canvas');
+	            canvas.width = 16;
+	            canvas.height = 16;
+
+	            var context = canvas.getContext('2d');
+	            var gradient = context.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width / 2);
+	            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+	            gradient.addColorStop(0.2, 'rgba(0,255,255,1)');
+	            gradient.addColorStop(0.4, 'rgba(0,0,64,1)');
+	            gradient.addColorStop(1, 'rgba(0,0,0,1)');
+
+	            context.fillStyle = gradient;
+	            context.fillRect(0, 0, canvas.width, canvas.height);
+
+	            var texture = new THREE.Texture(canvas);
+	            texture.needsUpdate = true;
+	            return texture;
+
+	        }
 
 
 		</script>
