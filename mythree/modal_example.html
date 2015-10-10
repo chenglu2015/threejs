@@ -41,15 +41,12 @@
 		<div id="Stats-output">
 		</div>
 
-		<div style="opacity:0.7;position:absolute;top:50%;left:0px">
-			<button id="test" class="btn btn-labled btn-info" onclick="showModal()" >
-				<span class="btn-lable icon fa fa-info"></span>
-				 Info
-			</button><br><br>
-			<button id="test1" class="btn btn-labled btn-success" data-toggle="modal" data-target="#searchModal">
-				<span class="btn-lable icon fa fa-search"></span>
-				Search
-			</button>
+		<div style="opacity:1;position:absolute;top:50%;left:0px;width:200px">
+			<div class="input-group no-margin">
+				<span class="input-group-addon" style="border:none;background: #fff;background: rgba(0,0,0,.05);"><i class="fa fa-search"></i></span>
+				<input type="text" placeholder="Search..." class="form-control no-padding-hr" 
+					style="border:none;background: #fff;background: rgba(0,0,0,.05);">
+			</div>
 		</div>
 		
 
@@ -66,59 +63,6 @@
 			</div>
 		</div>
 
-		<div id="searchModal" class="modal fade" tabindex="-1" role="dialog" style="display:none;" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-body">
-						<div class="input-group no-margin">
-							<span class="input-group-addon" style="border:none;background: #fff;background: rgba(0,0,0,.05);"><i class="fa fa-search"></i></span>
-							<input type="text" placeholder="Search..." class="form-control no-padding-hr" style="border:none;background: #fff;background: rgba(0,0,0,.05);">
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<script type="x-shader/x-vertex" id="vertexshader">
-
-			attribute float size;
-			attribute vec3 customColor;
-
-			varying vec3 vColor;
-
-			void main() {
-
-				vColor = customColor;
-
-				vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-
-				gl_PointSize = size * ( 300.0 / length( mvPosition.xyz ) );
-
-				gl_Position = projectionMatrix * mvPosition;
-
-			}
-
-		</script>
-
-		<script type="x-shader/x-fragment" id="fragmentshader">
-
-			uniform vec3 color;
-			uniform sampler2D texture;
-
-			varying vec3 vColor;
-
-			void main() {
-
-				// gl_FragColor = vec4( color * vColor, 1.0 );
-
-				gl_FragColor =  texture2D( texture, gl_PointCoord );
-
-				if ( gl_FragColor.a < ALPHATEST ) discard;
-
-			}
-
-		</script>
-
 		<!-- Javascript code that runs our Three.js examples -->
 		<script type="text/javascript">
 
@@ -133,6 +77,8 @@
 			var mouse;
 			var INTERSECTED;
 
+			var isModal = false;
+
 			var sTexture = THREE.ImageUtils.loadTexture("image/IMG_0033.JPG");
 
 			//once everything is loaded, we run our Three.js stuff.
@@ -143,10 +89,10 @@
  				var scene = new THREE.Scene();
  				
  				//add camera and renderer
- 				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+ 				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
  				
  				var renderer = new THREE.WebGLRenderer();
- 				renderer.setClearColor(0x333333, 1.0);
+ 				renderer.setClearColor(0x000000, 1.0);
  				renderer.setSize(window.innerWidth, window.innerHeight);
  				renderer.shadowMapEnabled = true;
 
@@ -156,7 +102,7 @@
 
 		        camera.position.x = 0;
 		        camera.position.y = 0;
-		        camera.position.z = 330;
+		        camera.position.z = 600;
 		        camera.lookAt(new THREE.Vector3(0, 0, 0));
 		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
@@ -174,45 +120,25 @@
 
 		        var geom = new THREE.Geometry();
 
-		        attributes = {
-					size:        { type: 'f', value: [] },
-					customColor: { type: 'c', value: [] },
-				};
-
-				uniforms = {
-					color:   { type: "c", value: new THREE.Color( 0xffffff ) },
-					texture: { type: "t", value: generateSprite() }
-					
-				};
-
-		        var shaderMaterial = new THREE.ShaderMaterial( {
-					uniforms: uniforms,
-					attributes: attributes,
-					vertexShader: document.getElementById( 'vertexshader' ).textContent,
-					fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-
-					alphaTest: 0.9,
-				} );
+				var material = new THREE.PointCloudMaterial({
+					color: 0xffffff,
+					size: 3,
+					transparent: true,
+					blending: THREE.AdditiveBlending,
+					map: generateSprite()
+				});
 
 				var radius = 300;
 				var rand = 30;		        
-		        for(var i = 0; i < 10000; i++){
+		        for(var i = 0; i < 100000; i++){
 		        	var particle = initParticle(radius, rand);
 		        	geom.vertices.push(particle);
 		        }
 
 
-		        var cloud = new THREE.PointCloud(geom, shaderMaterial);
-
-	            var values_size = attributes.size.value;
-				var values_color = attributes.customColor.value;
+		        var cloud = new THREE.PointCloud(geom, material);
 
 				var vertices = cloud.geometry.vertices;
-
-				for( var v = 0,  vl = vertices.length; v < vl; v++ ) {
-					values_size[ v ] = PARTICLE_SIZE;
-					values_color[ v ] = new THREE.Color().setHSL( 1, 0.5, 0.5 );
-				}
 
 	            scene.add(cloud);
 
@@ -221,10 +147,17 @@
 		        mouse = new THREE.Vector2();
 
 		        var sphere;
+		        var step = 0;
  				//add animation
  				render();
  				function render(){
  					stats.update();
+
+ 					if(camera.position.z > 330){
+	 					cloud.rotation.y = step;
+	 					step += 0.001;
+	 					camera.position.z -= 1;
+ 					}
 
  					var delta = clock.getDelta();
  					trackball.update(delta);
@@ -234,7 +167,6 @@
 
  					if ( intersects.length > 0 ) {
 						if ( INTERSECTED != intersects[ 0 ].index ) {
-							// attributes.size.value[ INTERSECTED ] = PARTICLE_SIZE;
 							scene.remove(sphere);
 							INTERSECTED = intersects[ 0 ].index;
 							sphere = focusParticle();
@@ -242,14 +174,9 @@
 							sphere.position.y = vertices[INTERSECTED].y;
 							sphere.position.z = vertices[INTERSECTED].z;
 							scene.add(sphere);
-							// console.log(vertices[INTERSECTED]);
-							// attributes.size.value[ INTERSECTED ] = PARTICLE_SIZE * 5;
-							// attributes.size.needsUpdate = true;
 						}
 					} else if ( INTERSECTED !== null ) {
-						// attributes.size.value[ INTERSECTED ] = PARTICLE_SIZE;
 						scene.remove(sphere);
-						// attributes.size.needsUpdate = true;
 						INTERSECTED = null;
 					}
 
@@ -264,7 +191,6 @@
 					camera.updateProjectionMatrix();
 
 					renderer.setSize( window.innerWidth, window.innerHeight );
-
 				}
 
 				function onDocumentMouseMove( event ) {
@@ -276,16 +202,14 @@
 
 				}
 
-				var cameraMouse = new THREE.Vector2();
-				cameraMouse.x = 0;
-				cameraMouse.y = 0;
-
-
-				functio
-
 				function onDocumentMouseClick( event ){
-					if(INTERSECTED != null){
+					if(isModal){
+						isModal = false;
+						return false;
+					}
+					if(INTERSECTED != null && !isModal){
 						$("#infoModal").modal("show");
+						isModal = true;
 					}
 				}
 
@@ -309,7 +233,7 @@
 				var z = Math.sqrt(delta * delta - y * y);
 				if(Math.random() > 0.5){
 					z = 0 - z;
-				}
+				};
 				return new THREE.Vector3(x + Math.random() * rand - rand / 2, y + Math.random() * rand - rand / 2,
 					z + Math.random() * rand - rand / 2);
 			}
