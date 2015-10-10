@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<script type="text/javascript">
+<!--
+    function popup(){
+    document.getElementById("translevel").style.display="block";
+    document.getElementById("pop-up").style.display="block";
+    }
+    function submitdata()
+    {    
+        document.getElementsByName("formOne").item(0).submit();
+    }
+    function popdown()
+    {
+        document.getElementById("translevel").style.display="none";
+        document.getElementById("pop-up").style.display="none";
+    }
+-->
+</script>
+<style type="text/css">
+    <!--
+        *{
+            padding:0;
+            margin:0;
+            }  
+        body{
+            text-align:center;
+            margin:auto;
+            font-family:"微软雅黑", "宋体";
+            font-size:14px;}
+            
+        #main{
+            padding:50px;
+            width:200px;
+            background:#eee;
+            margin:auto;
+            position:relative;
+            top:200px;
+            }
+        #translevel{
+            position:absolute;
+            top:0;
+            left:0;
+            background-color:#000;
+            filter:alpha(opacity=50);
+            opacity: 0.5;
+            -moz-opacity:0.5;
+            height:100%;
+            width:100%;
+            z-index:2;
+            display:none;}
+        #pop-up{
+            width:500px;
+            height:300px;
+            text-align:left;
+            background-color:#EEE;
+            position: absolute;
+            top:50%;
+            margin-top:-150px;
+            left:50%;
+            margin-left:-250px;
+            z-index:3;
+            display:none;
+            overflow:hidden;
+            }
+        .title{
+            background-color:#CCC;
+            height:35px;
+            overflow:hidden;
+            position:relative;
+            }
+        .titcon{
+            font-size:16px;
+            padding-top:7px;
+            padding-bottom:7px;
+            padding-left:8px;
+            }
+        .login{
+            padding-left:8px;}
+        .close{
+            margin-left:400px;
+            cursor:pointer;
+            }
+        .content{
+            padding:40px;
+            text-align:center;}
+        .letsp14{
+            letter-spacing:14px;
+            }
+        .content li{
+            list-style-type:none;
+            padding-bottom:10px;
+            }
+        .wid{
+            width:160px;}
+        .button{
+            padding:3px 15px;
+            background:#CCC;
+            cursor:pointer;
+            margin:20px;
+            border-top:1px solid #FFF;
+            border-left:1px solid #FFF;
+            border-bottom:1px solid #666;
+            border-right:1px solid #666;
+            }
+        .securityCode{
+            padding:0px 8px;
+            background:#FFF;
+            cursor:pointer;
+            margin:20px;
+            border:1px solid #FFF;
+            }
+    -->
+</style>
+</head>
+<body>
+    <div id="main">半透明弹出层效果<input title="点击-弹出层" type="button" onclick="popup()" value="点击这儿"/></div>
+    <div id="translevel">&nbsp;</div>
+    <div id="pop-up">
+        <div class="title"><div class="titcon"><span class="login">用户登录</span><span class="close" onclick="popdown()">x</span></div></div>
+        <div class="content">
+            <form action="#" method="post" name="formOne">
+            <ul>
+                <li>用户<span class="letsp14">名</span>:<span style="padding-left:14px;"><input class="wid" type="text"/></span></li>
+                <li><span class="letsp14">密码</span>:<span style="padding-left:14px"><input class="wid" type="password"/></span></li>
+                <li>验证<span class="letsp14">码</span>:<span style="padding-left:14px"><input type="text" class="wid"/></span></li>
+                <li>看不清，换一张<span style="padding-left:14px"><span class="securityCode">7895</span></span></li>
+                <li>&nbsp;</li>
+                <li><span class="button" onclick="submitdata()">确定</span><span class="button" onclick="popdown()">取消</span></li>
+             </ul>
+            </form>
+         </div>   
+    </div>
+</body>
+</html>
