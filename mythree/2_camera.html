@@ -99,6 +99,13 @@
 		        sphere.position.set(20, 20, 20);
 		        scene.add(sphere);
 
+
+		        var boxmtl = new THREE.MeshBasicMaterial();
+		        var box = new THREE.Mesh(boxGeo, boxmtl);
+		        box.position.set(10,20,10);
+		        scene.add(box);
+		        var axisx = new THREE.Vector3(1, 0, 0);
+
 		        var camera = persCamera;
 		        // var camera = orthoCamera;
 		        camera.lookAt(scene.position);
@@ -134,8 +141,9 @@
  					step += 0.02;
  					var x = -10 + ( 100 * (Math.sin(step)));
  					var y = 20 + 10 * (Math.cos(step));
-	               	camera.lookAt(new THREE.Vector3(x, y, 10));
+	               	// camera.lookAt(new THREE.Vector3(x, y, 10));
 	               	sphere.position.set(x, y, 10);
+	               	box.rotateOnAxis(axis, 0.01);
 
  					requestAnimationFrame(render);
  					renderer.render(scene, camera);

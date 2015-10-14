@@ -3,7 +3,6 @@
 <head>
 
 	<script type="text/javascript" src="../libs/three.js"></script>
-	<script type="text/javascript" src="../libs/helvetiker_regular.typeface.js"></script> 
 	<style >
 		body{
 			/* set margin to 0 and overflow to hidden, to use the complete page */
@@ -26,12 +25,20 @@
 		//to save all cubes by position
 		var cubes = [];
 
+		//position when mouse down
+		var mousePosition = new THREE.Vector2();
+		//move direction;
+		var direction;
+		var left = true;
+
 		var raycaster = new THREE.Raycaster();	
 		var mouse = new THREE.Vector2();
 		var INTERSECTED;
 
-		var count = 0;  // counter
-		var x=0, y=0 ,z=0;  //rotate direct
+		//counter and rotation direction
+		var deltaAngle = 0;
+		var rotationAxis = new THREE.Vector3(); 
+
     	var renderer = new THREE.WebGLRenderer();
 		renderer.setClearColor(0xEEEEEE, 1.0);
 		renderer.setSize(window.innerWidth, window.innerHeight);
@@ -39,31 +46,38 @@
 
 		var scene = new THREE.Scene();
 		var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-		camera.position.set(4, 3, 6);
+		camera.position.set(4, 3, 4);
 		camera.lookAt(new THREE.Vector3(0, 0, 0));
 		document.getElementById("mainCanvas").appendChild(renderer.domElement);
 
 		window.addEventListener( 'resize', onWindowResize, false );
+		window.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+		document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+		document.addEventListener( 'click', onDocumentMouseClick, false );
+
 		//add material
-		var materials = [];
-		for (var i = 0; i < 6; ++i) {
-		    materials.push(new THREE.MeshBasicMaterial({
-		        map: THREE.ImageUtils.loadTexture('./image/' + i + '.png', {}, function() {
-		        	renderer.render(scene, camera);
-		        })
-		    }));
+		var materials = [[],[],[],[],[],[],[],[]];
+		for (i = 0; i < 6; ++i) {
+			for(j = 0; j < 8; j++){
+			    materials[j].push(new THREE.MeshBasicMaterial({
+			        map: THREE.ImageUtils.loadTexture('./image/' + i + '.png', {}, function() {
+			        	renderer.render(scene, camera);
+			        })
+			    }));
+			}
 		}
 
 		//mesh
 		var cubeGeometry = new THREE.CubeGeometry(1, 1, 1);
-		var faceMaterial = new THREE.MeshFaceMaterial(materials);
 		//init magic box
 		for(i = 0; i < 2; i++){
 			for(j = 0; j < 2; j++){
 				for(k = 0; k < 2; k++){
+					var faceMaterial = new THREE.MeshFaceMaterial(materials[i * 4 + j * 2 + k]);
 					var cube = new THREE.Mesh(cubeGeometry, faceMaterial);
 					cube.position.set(-0.5 + i, -0.5 + j, -0.5 + k);
-					cubes[i*4 + j* 2 + k] = cube;
+					cubes[i * 4 + j * 2 + k] = cube;
 					scene.add(cube);
 				}
 			}
@@ -81,68 +95,66 @@
 
 			var intersects = raycaster.intersectObjects(cubes);
 
-			if(INTERSECTED){
-				INTERSECTED.material.transparent = false;
-				INTERSECTED.material.opacity = 1;
-			}
-			INTERSECTED = null;
-
 			if(intersects.length > 0){
 				INTERSECTED = intersects[0].object;
+			}
+			else{
+				INTERSECTED = null;
 			}
 
 			requestAnimationFrame(render);
  			renderer.render(scene, camera);
 		}
 
-    	function animate() {
-		    var id = requestAnimationFrame(animate);
-		    
-		    pivot.rotation.x += x * Math.PI/30;
-		    pivot.rotation.y += y * Math.PI/30;
-		    pivot.rotation.z += z * Math.PI/30;
-		    renderer.render(scene, camera);
-		    count = count + 1;
-		    if(count >= 15){
-		    	console.log(x, y ,z);
-		    	restart();
-		    	cancelAnimationFrame(id);
-		    }
-		}
-
-
-
-		window.onclick = function(e) {  
-			if(count > 0 ){
-				return false;
-			}
-
-			if(INTERSECTED){
-
-			}
-
-
+		function onDocumentMouseClick(event) {  
 			
-			animate();
 			
 		}
 
-		var getMousePosition = function(e) {
-			e = e || window.event;
-		    var Ax = e.pageX || (e.clientX + (document.documentElement.scrollLeft || document.body.scrollLeft));
-		    var Ay= e.pageY || (e.clientY + (document.documentElement.scrollTop || document.body.scrollTop));
-		    return {'x':Ax, 'y':Ay};
+		function onDocumentMouseDown(event){
+
+			moveCube();
+			direction = null;
+			left = true;
+			rotationAxis = new THREE.Vector3();
+			while(pivot.children.length > 0){
+				var cube = pivot.children[0];
+				scene.add(cube);
+				pivot.remove(cube);
+			}
+			pivot = new THREE.Object3D();
+			scene.add(pivot);
+
+			if(!INTERSECTED){
+				for(i=0; i<8; i++){
+					pivot.add(cubes[i]);
+				}
+			}
+			
+			event.preventDefault();
+
+			mousePosition.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+			mousePosition.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+			if(mousePosition.x > 0){
+				left = false;
+			}
+
+			document.removeEventListener( 'mousemove', onDocumentMouseMove, false );
+			document.addEventListener( 'mousemove', pivotMouseMove, false );
 		}
 
-		var restart = function(){
-			count = 0;
-			x = 0;
-			y = 0;
-			z = 0;
-			// for(var cube in pivot.children){
-			// 	pivot.remove(cube);
-			// }
+		function onDocumentMouseUp( event ){
+
+			setPosition(pivot);
+
+			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+			document.removeEventListener( 'mousemove', pivotMouseMove, false );
+
+
+
 		}
+
 
 		function onWindowResize() {
 
@@ -153,7 +165,7 @@
 
 		}
 
-		window.onmousemove = function onDocumentMouseMove( event ) {
+		function onDocumentMouseMove( event ) {
 
 			event.preventDefault();
 
@@ -161,6 +173,232 @@
 			mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
 		}
+
+		//select the cube when INTERSECTED is not null
+		//axis is the rotate axis, num is the position num of selected cub
+		function pivotSelect(axis, num){
+			for(var index in cubes){
+				//axis x
+				if(axis == 1){
+					if(cubes[index].position.x == num){
+						pivot.add(cubes[index]);
+					}
+				}
+				//axis y
+				else if(axis == 2){
+					if(cubes[index].position.y == num){
+						pivot.add(cubes[index]);
+					}
+				}
+				//axis z
+				else{
+					if(cubes[index].position.z == num){
+						pivot.add(cubes[index]);
+					}
+				}
+			}
+		}
+
+
+		//pivot rotates when mouse move
+		function pivotMouseMove( event ){
+			event.preventDefault();
+
+			var x = ( event.clientX / window.innerWidth ) * 2 - 1;
+			var y = - ( event.clientY / window.innerHeight ) * 2 + 1; 
+
+			var deltaX = x - mousePosition.x;
+			var deltaY = y - mousePosition.y;
+
+			//ensure the direction
+			if(!direction){
+				
+				if(Math.abs(deltaX) >= Math.abs(deltaY)){
+					direction = 1;
+				}
+				else{
+					direction = 2;
+				}
+			}
+
+			if(pivot.children.length < 1){
+				if(direction == 1){
+					pivotSelect(2, INTERSECTED.position.y);
+				}
+				else{
+					if(left){
+						pivotSelect(1, INTERSECTED.position.x);
+					}
+					else{
+						pivotSelect(3, INTERSECTED.position.z);
+					}
+				}
+			}
+
+			//move
+			if(direction == 1){
+				var angle = deltaX * Math.PI;
+				pivot.rotation.y += angle;
+				rotationAxis.y = 1;
+			}
+			else if(direction == 2){
+				var angle = deltaY * Math.PI;
+				if(left){
+					pivot.rotation.x -= angle;
+					rotationAxis.x = 1;
+				}
+				else{
+					pivot.rotation.z += angle;
+					rotationAxis.z = 1;
+				}
+			}
+
+			mousePosition.x = x;
+			mousePosition.y = y;
+
+
+
+		}
+
+		//the pivot should adjust to the closest status after mouse up
+		function setPosition( pivot ){
+			var sign = 1;
+			if(rotationAxis.x == 1){
+				deltaAngle = pivot.rotation.x;
+			}
+			else if(rotationAxis.y == 1){
+				deltaAngle = pivot.rotation.y;
+			}
+			else{
+				deltaAngle = pivot.rotation.z;
+			}
+
+			if(deltaAngle < 0){
+				sign = -1;
+				deltaAngle = -deltaAngle;
+			}
+
+			while( deltaAngle > Math.PI / 2 ){
+					deltaAngle -= Math.PI / 2;
+			}
+
+			if(deltaAngle < Math.PI / 4){
+				deltaAngle = -1 * sign * deltaAngle;
+			}
+			else{
+				deltaAngle = (Math.PI / 2 - deltaAngle) * sign;
+			}
+
+			animate();
+
+		}
+
+		//adjust animate
+		function animate() {
+		    var id = requestAnimationFrame(animate);
+		    
+		    var angle = Math.PI/30 * deltaAngle / Math.abs(deltaAngle);
+		    if(Math.abs(deltaAngle) < Math.PI/30){
+		    	angle = deltaAngle;
+		    }
+
+		    deltaAngle -= angle;
+
+		    pivot.rotation.x += rotationAxis.x * angle;
+		    pivot.rotation.y += rotationAxis.y * angle;
+		    pivot.rotation.z += rotationAxis.z * angle;
+		    renderer.render(scene, camera);
+
+		    if(deltaAngle == 0){
+		    	cancelAnimationFrame(id);
+		    }
+		}
+
+
+
+		//when pivot's rotation end, the cubes should move to the new position;
+		//pivot's rotation does not move the cubes in reality
+		function moveCube(){
+			var times;
+			if(rotationAxis.x == 1){
+				times = pivot.rotation.x / Math.PI * 2;
+			}
+			else if(rotationAxis.y == 1){
+				times = pivot.rotation.y  / Math.PI * 2;
+			}
+			else{
+				times = pivot.rotation.z / Math.PI * 2;
+			}
+
+			times = Math.round(times);
+
+			while(times > 0){
+				times -= 4;
+			}
+			while(times < 0){
+				times += 4;
+			}
+
+			//rotate the cube, factually, I move the face of all the rotated cube
+			for(var index in pivot.children){
+				for(i=0; i < times; i++){
+					if(rotationAxis.x == 1){
+						aroundX(pivot.children[index]);
+					}
+					else if(rotationAxis.y == 1){
+						aroundY(pivot.children[index]);
+					}
+					else{
+						aroundZ(pivot.children[index]);
+					}
+				}
+			}
+
+		}
+
+		//rotate PI/2 around x
+		function aroundX( cube ){
+			if(cube.position.y == cube.position.z){
+				cube.position.y = -cube.position.y;
+			}
+			else{
+				cube.position.z = -cube.position.z;
+			}
+			var tmp = cube.material.materials[2];
+    		cube.material.materials[2] = cube.material.materials[5];
+    		cube.material.materials[5] = cube.material.materials[3];
+    		cube.material.materials[3] = cube.material.materials[4];
+    		cube.material.materials[4] = tmp;
+		}
+		//rotate PI/2 around y
+		function aroundY( cube ){
+			if(cube.position.x == cube.position.z){
+				cube.position.z = -cube.position.z;
+			}
+			else{
+				cube.position.x = -cube.position.x;
+			}
+			var tmp = cube.material.materials[0];
+    		cube.material.materials[0] = cube.material.materials[4];
+    		cube.material.materials[4] = cube.material.materials[1];
+    		cube.material.materials[1] = cube.material.materials[5];
+    		cube.material.materials[5] = tmp;
+		}
+		//rotate PI/2 around z
+		function aroundZ( cube ){
+			if(cube.position.y == cube.position.x){
+				cube.position.x = -cube.position.x;
+			}
+			else{
+				cube.position.y = -cube.position.y;
+			}
+			var tmp = cube.material.materials[0];
+    		cube.material.materials[0] = cube.material.materials[3];
+    		cube.material.materials[3] = cube.material.materials[1];
+    		cube.material.materials[1] = cube.material.materials[2];
+    		cube.material.materials[2] = tmp;
+		}
+
 
 	} 
 
