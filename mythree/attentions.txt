@@ -7,5 +7,10 @@
 3.材质通用属性（depth除外）：
 	a:可以添加ID，名称（然并卵）
 	b：设置颜色，高级材质还能设置本身颜色和反射颜色，ambient、emissive
-	c: 透明度opacity 需要transparent 设置为1；visible
-	d：
+	c: 透明度opacity 需要transparent 设置为true；visible
+	d：可以使用图片，用texture
+	e: shader material 使用自定义方式生成，需要其他语言加入来生成材质，此材质特殊，需另外学习。
+	
+4.camera移动
+对于一个表现良好的动画来说，相机的移动非常重要，一般根据要求自定义编写相机移动。
+three自带的相机移动可以参考。
