@@ -8,6 +8,7 @@
 		<script type="text/javascript" src="../libs/stats.js"></script>
 		<script type="text/javascript" src="../libs/dat.gui.js"></script>
 		<script type="text/javascript" src="../libs/OrbitControls.js"></script>
+		<script type="text/javascript" src="../js/cameraRound.js"></script>
 		<style >
 			body{
 				/* set margin to 0 and overflow to hidden, to use the complete page */
@@ -29,6 +30,8 @@
 
 		<!-- Javascript code that runs our Three.js examples -->
 		<script type="text/javascript">
+
+			var cameraRound;
 
 			//once everything is loaded, we run our Three.js stuff.
 			$(function () { 
@@ -60,6 +63,8 @@
  				var cylinderMtl = new THREE.MeshNormalMaterial();
  				var cylinder = new THREE.Mesh(cylinderGeom, cylinderMtl);
  				// scene.add(cylinder);
+
+ 				cameraRound = new THREE.RoundControls(camera, renderer.domElement);
 
  				//pictures
  				
@@ -101,6 +106,7 @@
  				render();
  				function render(){
  					stats.update();
+ 					// cameraRound.update();
 
  					requestAnimationFrame(render);
  					renderer.render(scene, camera);
