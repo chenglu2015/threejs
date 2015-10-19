@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Particle Sphere</title>
+		<script type="text/javascript" src="../libs/three.js"></script>
+		<script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
+		<script type="text/javascript" src="../libs/stats.js"></script>
+		<script type="text/javascript" src="../libs/dat.gui.js"></script>
+		<style >
+			body{
+				/* set margin to 0 and overflow to hidden, to use the complete page */
+
+				margin: 0;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<!-- Div which will hold the Output -->
+		<div id="WebGL-output">
+		</div>
+
+		<!-- Div which will show the stats -->
+		<div id="Stats-output">
+		</div>
+
+		<!-- Javascript code that runs our Three.js examples -->
+		<script type="text/javascript">
+
+			var mouse = new THREE.Vector2();
+			var raycaster, intersects;
+			var INTERSECTED;
+			var INTERSECTED_PARTICLE;
+
+			var infocus = false;
+
+			var positionDelta = new THREE.Vector3();
+			var lookAtDelta = new THREE.Vector3();
+			var lookAt = new THREE.Vector3();
+
+			var times = 50;
+
+			var textureSphere;
+			var sTexture = THREE.ImageUtils.loadTexture("image/pictures/0.JPG");
+
+			var selectCloud;
+			var vertices;
+			var renderID;
+			var state = 1;
+
+			//position when mouse down
+			var mousePosition = new THREE.Vector2();
+			var MOUSEUP = true;
+
+			//once everything is loaded, we run our Three.js stuff.
+			$(function () { 
+ 				var stats = initStats();
+ 				
+ 				//here we'll put the Three.js stuff
+ 				var scene = new THREE.Scene();
+ 				
+ 				//add camera and renderer
+ 				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+ 				
+ 				var renderer = new THREE.WebGLRenderer();
+ 				renderer.setClearColor(0x333333, 1.0);
+ 				renderer.setSize(window.innerWidth, window.innerHeight);
+ 				renderer.shadowMapEnabled = true;
+
+ 				// add spotlight for the shadows
+		        var spotLight = new THREE.SpotLight(0xffffff);
+		        spotLight.position.set(20, 20, 20);
+		        scene.add(spotLight);
+
+
+		        camera.position.x = 0;
+		        camera.position.y = 0;
+		        camera.position.z = 200;
+		        camera.lookAt(scene.position);
+		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+		        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		        document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+		        window.addEventListener( 'resize', onWindowResize, false );
+
+				var material = new THREE.PointCloudMaterial({
+	                color: 0xffffff,
+	                size: 0.4,
+	                opacity: 1,
+	                transparent: true,
+	                blending: THREE.AdditiveBlending,
+	                map: generateSprite()
+	            });
+
+	            // var sphereMtl = new THREE.MeshBasicMaterial({
+	            // 	color: 0xffffff,
+	            // 	transparent: true,
+	            // 	opacity: 0
+	            // });
+
+	            // var spheres = [];
+	            var clouds = [];
+		        for(var i = 0; i < 20; i++){
+		        	var geom = new THREE.SphereGeometry(5, 30, 30);
+		        	var cloud = new THREE.PointCloud(geom, material);
+		        	cloud.position.x = -50 + 100 * Math.random();
+		        	cloud.position.y = -50 + 100 * Math.random();
+		        	cloud.position.z = -50 + 100 * Math.random();
+		        	clouds.push(cloud);
+		        	scene.add(cloud);
+
+		        	// var sphere = new THREE.Mesh(geom, sphereMtl);
+		        	// sphere.position.x = cloud.position.x;
+		        	// sphere.position.y = cloud.position.y;
+		        	// sphere.position.z = cloud.position.z;
+		        	// spheres.push(sphere);
+		        	// scene.add(sphere);
+
+		        }
+
+		        raycaster = new THREE.Raycaster();
+
+ 				//add animation
+ 				render();
+ 				function render(){
+ 					stats.update();
+
+ 					raycaster.setFromCamera(mouse, camera);
+ 					intersects = raycaster.intersectObjects(clouds);
+
+ 					if (intersects.length > 0) {
+						INTERSECTED = intersects[0].object;
+					} 
+					else if (INTERSECTED !== null) {
+						INTERSECTED = null;
+					}
+
+
+ 					renderID = requestAnimationFrame(render);
+ 					renderer.render(scene, camera);
+ 				};
+
+ 				function renderCloud(){
+ 					stats.update();
+
+ 					raycaster.setFromCamera(mouse, camera);
+ 					intersects = raycaster.intersectObject(selectCloud);
+
+ 					if (intersects.length > 0) {
+						INTERSECTED_PARTICLE = intersects[0].index;
+					} 
+					else if (INTERSECTED_PARTICLE !== null) {
+						INTERSECTED_PARTICLE = null;
+					}
+
+
+ 					renderID = requestAnimationFrame(renderCloud);
+ 					renderer.render(scene, camera);
+ 				}
+
+ 				function onWindowResize() {
+
+					camera.aspect = window.innerWidth / window.innerHeight;
+					camera.updateProjectionMatrix();
+
+					renderer.setSize( window.innerWidth, window.innerHeight );
+
+				}
+
+				function onDocumentMouseMove( event ) {
+
+					event.preventDefault();
+
+					mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+					mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				}
+
+				
+
+				function onDocumentMouseDown( event ){
+					event.preventDefault();
+					MOUSEUP = false;
+					mousePosition.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+					mousePosition.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+					if(times !== 50){
+						return false;
+					}
+
+					if(event.button === 0){
+						if(!infocus){
+							if(INTERSECTED !== null){
+								selectCloud = INTERSECTED;
+								vertices = selectCloud.geometry.vertices;
+								positionDelta.subVectors(INTERSECTED.position, camera.position);
+								positionDelta.z += 15;
+								lookAtDelta.subVectors(INTERSECTED.position, scene.position);
+								
+								document.addEventListener('mousemove', cloudMouseMove, false);
+								document.addEventListener('mouseup', onDocumentMouseUp, false);
+
+								infocus = true;
+								state = 2;
+								animate();
+							}
+						}
+					}
+					else if(event.button === 2){
+						if(infocus){
+							var ZERO = new THREE.Vector3(0, 0, 0);
+							positionDelta.subVectors(ZERO, positionDelta);
+							lookAtDelta.subVectors(ZERO, lookAtDelta);
+					        
+							document.removeEventListener('mousemove', cloudMouseMove, false);
+							document.removeEventListener('mouseup', onDocumentMouseUp, false);
+							MOUSEUP = true;
+
+					        infocus = false;
+					        state = 1;
+					        animate();
+						}
+					}
+
+				}
+
+				function cloudMouseMove(event){
+					if(MOUSEUP){
+						return false;
+					}
+					event.preventDefault();
+
+					var x = ( event.clientX / window.innerWidth ) * 2 - 1;
+					var y = - ( event.clientY / window.innerHeight ) * 2 + 1; 
+
+					var deltaX = x - mousePosition.x;
+					var deltaY = y - mousePosition.y;
+
+					mousePosition.x = x;
+					mousePosition.y = y;
+
+					selectCloud.rotation.x += -deltaY;
+					selectCloud.rotation.y += deltaX;
+				}
+
+				function onDocumentMouseUp(event){
+					MOUSEUP = true;
+				}
+
+
+				function animate(){
+					var id = requestAnimationFrame(animate);
+
+					if(times > 0){
+						camera.position.x += positionDelta.x / 50;
+						camera.position.y += positionDelta.y / 50;
+						camera.position.z += positionDelta.z / 50;
+						lookAt.x += lookAtDelta.x / 50;
+						lookAt.y += lookAtDelta.y / 50;
+						lookAt.z += lookAtDelta.z / 50;
+						camera.lookAt(lookAt);
+
+						times--;
+					}
+					else{
+						cancelAnimationFrame(id);
+						cancelAnimationFrame(renderID);
+						if(state === 1){
+							render();
+						}
+						else if(state === 2){
+							renderCloud();
+						}
+						times = 50;
+					}
+				}
+
+
+
+			});
+
+			document.oncontextmenu = function(event){
+			    return false;
+		    }
+
+			function initStats(){
+				var stats = new Stats();
+				stats.setMode(0);
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.lefe = '0px';
+				stats.domElement.style.top = '0px';
+				$("#Stats-output").append(stats.domElement);
+				return stats;
+			}
+
+			function focusParticle(){
+				var focusGeom = new THREE.SphereGeometry(1, 50, 50);
+				var focusMtl = new THREE.MeshBasicMaterial({color: 0xffffff});
+				focusMtl.map = sTexture;
+				var focusSphere = new THREE.Mesh(focusGeom, focusMtl);
+				focusSphere.name = "focus";
+				return focusSphere;
+			}
+
+			// from THREE.js examples
+	        function generateSprite() {
+
+	            var canvas = document.createElement('canvas');
+	            canvas.width = 16;
+	            canvas.height = 16;
+
+	            var context = canvas.getContext('2d');
+	            var gradient = context.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width / 2);
+	            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+	            gradient.addColorStop(0.2, 'rgba(0,255,255,1)');
+	            gradient.addColorStop(0.4, 'rgba(0,0,64,1)');
+	            gradient.addColorStop(1, 'rgba(0,0,0,1)');
+
+	            context.fillStyle = gradient;
+	            context.fillRect(0, 0, canvas.width, canvas.height);
+
+	            var texture = new THREE.Texture(canvas);
+	            texture.needsUpdate = true;
+	            return texture;
+
+	        }
+
+
+
+		</script>
+
+	</body>
+</html>

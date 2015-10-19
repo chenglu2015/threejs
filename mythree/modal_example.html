@@ -54,7 +54,7 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div>
-						<img src="../image/IMG_0033.JPG" width="400px" height="300px">
+						<img src="../image/pictures/0.JPG" width="400px" height="300px">
 					</div>
 					<div>
 						<p>this is a example~~~</p>
@@ -79,7 +79,7 @@
 
 			var isModal = false;
 
-			var sTexture = THREE.ImageUtils.loadTexture("image/IMG_0033.JPG");
+			var sTexture = THREE.ImageUtils.loadTexture("image/pictures/0.JPG");
 
 			//once everything is loaded, we run our Three.js stuff.
 			$(function () { 
@@ -111,7 +111,7 @@
 		        window.addEventListener( 'resize', onWindowResize, false );
 
 		        trackball = new THREE.TrackballControls(camera);
-				trackball.rotateSpeed = 0.01;
+				trackball.rotateSpeed = 0.005;
 				trackball.zoomSpeed = 0.1;
 				trackball.panSpeed = 0.01;
 				trackball.minDistance = 330;
