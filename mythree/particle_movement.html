@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Basic template</title>
+		<script type="text/javascript" src="../libs/three.js"></script>
+		<script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
+		<script type="text/javascript" src="../libs/stats.js"></script>
+		<script type="text/javascript" src="../libs/dat.gui.js"></script>
+		<script type="text/javascript" src="../libs/OrbitControls.js"></script>
+		<style >
+			body{
+				/* set margin to 0 and overflow to hidden, to use the complete page */
+
+				margin: 0;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<!-- Div which will hold the Output -->
+		<div id="WebGL-output">
+		</div>
+
+		<!-- Div which will show the stats -->
+		<div id="Stats-output">
+		</div>
+
+		<!-- Javascript code that runs our Three.js examples -->
+		<script type="text/javascript">
+
+			var orbit;
+			var mouse = new THREE.Vector2();
+
+			var maxCount = 1000;
+			var count = 500;
+			var r = 1000;
+
+			var particlePositions = new Float32Array(maxCount * 3);
+			var particleSpeed = new Float32Array(maxCount * 3);
+			var particles;
+			var pointCloud;
+			var particlesData = [];
+
+			var particleControls = {
+				count: 100
+			}
+
+			function initGUI() {
+				var gui = new dat.GUI();
+				gui.add(particleControls, 'count', 0, maxCount).onChange(function(value) {
+
+					count = parseInt(value);
+					particles.drawcalls[0].count = count;
+				});
+			}
+
+
+			//once everything is loaded, we run our Three.js stuff.
+			$(function () { 
+
+				initGUI();
+
+ 				var stats = initStats();
+ 				
+ 				//here we'll put the Three.js stuff
+ 				var scene = new THREE.Scene();
+ 				
+ 				//add camera and renderer
+ 				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 4000);
+ 				
+ 				var renderer = new THREE.WebGLRenderer();
+ 				renderer.setClearColor(0x000000, 1.0);
+ 				renderer.setSize(window.innerWidth, window.innerHeight);
+ 				renderer.shadowMapEnabled = true;
+
+		        camera.position.x = 0;
+		        camera.position.y = 0;
+		        camera.position.z = 2000;
+		        camera.lookAt(scene.position);
+		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+		        orbit = new THREE.OrbitControls(camera, renderer.domElement);
+
+		        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		        window.addEventListener( 'resize', onWindowResize, false );
+
+		        var pMaterial = new THREE.PointCloudMaterial( {
+					color: 0xFFFFFF,
+					size: 3,
+					blending: THREE.AdditiveBlending,
+					transparent: true,
+					sizeAttenuation: false
+				} );
+
+				particles = new THREE.BufferGeometry();
+
+				for ( var i = 0; i < maxCount; i++ ) {
+
+					var x = Math.random() * r - r / 2;
+					var y = Math.random() * r - r / 2;
+					var z = Math.random() * r - r / 2;
+
+					particlePositions[ i * 3     ] = x;
+					particlePositions[ i * 3 + 1 ] = y;
+					particlePositions[ i * 3 + 2 ] = z;
+
+					particleSpeed[i * 3    ] = -2 + Math.random() * 4;
+					particleSpeed[i * 3 + 1] = -2 + Math.random() * 4;
+					particleSpeed[i * 3 + 2] = -2 + Math.random() * 4;
+
+				}
+
+				particles.drawcalls.push( {
+					start: 0,
+					count: count,
+					index: 0
+				} );
+
+				particles.addAttribute( 'position', new THREE.DynamicBufferAttribute( particlePositions, 3 ) );
+
+				// create the particle system
+				pointCloud = new THREE.PointCloud( particles, pMaterial );
+				scene.add(pointCloud);
+
+
+ 				//add animation
+ 				render();
+ 				function render(){
+ 					stats.update();
+ 					orbit.update();
+
+ 					for ( var i = 0; i < maxCount; i++ ) {
+
+ 						particlePositions[ i * 3     ] += particleSpeed[ i * 3    ];
+						particlePositions[ i * 3 + 1 ] += particleSpeed[ i * 3 + 1];
+						particlePositions[ i * 3 + 2 ] += particleSpeed[ i * 3 + 2];
+
+						if ( particlePositions[ i * 3 + 1 ] < -r / 2 || particlePositions[ i * 3 + 1 ] > r / 2 )
+							particleSpeed[ i * 3 + 1 ] = - particleSpeed[ i * 3 + 1 ];
+
+						if ( particlePositions[ i * 3 ] < -r / 2 || particlePositions[ i * 3 ] > r / 2 )
+							particleSpeed[ i * 3 ] = - particleSpeed[ i * 3 ];
+
+						if ( particlePositions[ i * 3 + 2 ] < -r / 2 || particlePositions[ i * 3 + 2 ] > r / 2 )
+							particleSpeed[ i * 3 + 2 ] = - particleSpeed[ i * 3 + 2 ];
+
+ 					}
+
+ 					pointCloud.geometry.attributes.position.needsUpdate = true;
+
+ 					requestAnimationFrame(render);
+ 					renderer.render(scene, camera);
+ 				};
+
+ 				function onWindowResize() {
+
+					camera.aspect = window.innerWidth / window.innerHeight;
+					camera.updateProjectionMatrix();
+
+					renderer.setSize( window.innerWidth, window.innerHeight );
+
+				}
+
+				function onDocumentMouseMove( event ) {
+
+					event.preventDefault();
+
+					mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+					mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				}
+
+			});
+
+			function initStats(){
+				var stats = new Stats();
+				stats.setMode(0);
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.lefe = '0px';
+				stats.domElement.style.top = '0px';
+				$("#Stats-output").append(stats.domElement);
+				return stats;
+			}
+
+
+
+		</script>
+
+	</body>
+</html>

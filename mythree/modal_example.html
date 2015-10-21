@@ -89,7 +89,7 @@
  				var scene = new THREE.Scene();
  				
  				//add camera and renderer
- 				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
+ 				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
  				
  				var renderer = new THREE.WebGLRenderer();
  				renderer.setClearColor(0x000000, 1.0);
@@ -153,11 +153,11 @@
  				function render(){
  					stats.update();
 
- 					if(camera.position.z > 330){
-	 					cloud.rotation.y = step;
-	 					step += 0.001;
-	 					camera.position.z -= 1;
- 					}
+ 					// if(camera.position.z > 330){
+	 				// 	cloud.rotation.y = step;
+	 				// 	step += 0.001;
+	 				// 	camera.position.z -= 1;
+ 					// }
 
  					var delta = clock.getDelta();
  					trackball.update(delta);
