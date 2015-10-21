@@ -3,17 +3,17 @@
 <html>
 	<head>
 		<title>Particle</title>
-		<script type="text/javascript" src="../libs/three.js"></script>
-		<script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
-		<script type="text/javascript" src="../libs/stats.js"></script>
-		<script type="text/javascript" src="../libs/dat.gui.js"></script>
-		<script type="text/javascript" src="../libs/TrackballControls.js"></script>
+		<script type="text/javascript" src="./libs/three.js"></script>
+		<script type="text/javascript" src="./libs/jquery-1.9.0.js"></script>
+		<script type="text/javascript" src="./libs/stats.js"></script>
+		<script type="text/javascript" src="./libs/dat.gui.js"></script>
+		<script type="text/javascript" src="./libs/TrackballControls.js"></script>
 
-		<link rel="stylesheet" type="text/css" href="../stylesheets/bootstrap.css">
-		<link rel="stylesheet" type="text/css" href="../stylesheets/pixel-admin.css">
-		<link rel="stylesheet" type="text/css" href="../stylesheets/widgets.css">
-		<link rel="stylesheet" type="text/css" href="../stylesheets/rtl.css">
-		<link rel="stylesheet" type="text/css" href="../stylesheets/themes.css">
+		<link rel="stylesheet" type="text/css" href="./stylesheets/bootstrap.css">
+		<link rel="stylesheet" type="text/css" href="./stylesheets/pixel-admin.css">
+		<link rel="stylesheet" type="text/css" href="./stylesheets/widgets.css">
+		<link rel="stylesheet" type="text/css" href="./stylesheets/rtl.css">
+		<link rel="stylesheet" type="text/css" href="./stylesheets/themes.css">
 
 		<style >
 			body{
@@ -36,7 +36,7 @@
 
 		<div id="modal" class="modal fade" tabindex="-1" role="dialog" style="display:none;">
 			<div>
-				<img src="../image/IMG_0033.JPG" width="400px" height="300px">
+				<img src="./image/IMG_0033.JPG" width="400px" height="300px">
 			</div>
 			<div>
 				<p>this is a example~~~</p>
@@ -97,7 +97,7 @@
 			var mouse;
 			var INTERSECTED;
 
-			var sTexture = THREE.ImageUtils.loadTexture("image/IMG_0033.JPG");
+			var sTexture = THREE.ImageUtils.loadTexture("./image/IMG_0033.JPG");
 
 			//once everything is loaded, we run our Three.js stuff.
 			$(function () { 
@@ -147,7 +147,7 @@
 
 				uniforms = {
 					color:   { type: "c", value: new THREE.Color( 0xffffff ) },
-					texture: { type: "t", value: THREE.ImageUtils.loadTexture( "image/sprites/circle.png" ) }
+					texture: { type: "t", value: THREE.ImageUtils.loadTexture( "./image/sprites/circle.png" ) }
 					
 				};
 

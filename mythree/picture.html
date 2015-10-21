@@ -3,12 +3,12 @@
 <html>
 	<head>
 		<title>Picture</title>
-		<script type="text/javascript" src="../libs/three.js"></script>
-		<script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
-		<script type="text/javascript" src="../libs/stats.js"></script>
-		<script type="text/javascript" src="../libs/dat.gui.js"></script>
-		<script type="text/javascript" src="../libs/OrbitControls.js"></script>
-		<script type="text/javascript" src="../js/cameraRound.js"></script>
+		<script type="text/javascript" src="./libs/three.js"></script>
+		<script type="text/javascript" src="./libs/jquery-1.9.0.js"></script>
+		<script type="text/javascript" src="./libs/stats.js"></script>
+		<script type="text/javascript" src="./libs/dat.gui.js"></script>
+		<script type="text/javascript" src="./libs/OrbitControls.js"></script>
+		<script type="text/javascript" src="./js/cameraRound.js"></script>
 		<style >
 			body{
 				/* set margin to 0 and overflow to hidden, to use the complete page */
@@ -76,7 +76,7 @@
  				var delta = Math.atan(30 / 25);
  				var radius = Math.sqrt(30 * 30 + 25 * 25);
  				for(var i = 0; i < 36; i++){
-					var texture = THREE.ImageUtils.loadTexture("image/pictures/" + i + ".JPG");
+					var texture = THREE.ImageUtils.loadTexture("./image/pictures/" + i + ".JPG");
  					var planeMtl = new THREE.MeshBasicMaterial({color: 0xffffff});
  					planeMtl.map = texture;
  					planeMtl.transparent = true;

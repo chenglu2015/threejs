@@ -3,11 +3,11 @@
 <html>
 	<head>
 		<title>HemiSphereLight and LensFlare</title>
-		<script type="text/javascript" src="../libs/three.js"></script>
-		<script type="text/javascript" src="../libs/jquery-1.9.0.js"></script>
-		<script type="text/javascript" src="../libs/stats.js"></script>
-		<script type="text/javascript" src="../libs/dat.gui.js"></script>
-		<script type="text/javascript" src="../libs/OrbitControls.js"></script>
+		<script type="text/javascript" src="./libs/three.js"></script>
+		<script type="text/javascript" src="./libs/jquery-1.9.0.js"></script>
+		<script type="text/javascript" src="./libs/stats.js"></script>
+		<script type="text/javascript" src="./libs/dat.gui.js"></script>
+		<script type="text/javascript" src="./libs/OrbitControls.js"></script>
 		<style >
 			body{
 				/* set margin to 0 and overflow to hidden, to use the complete page */
@@ -93,9 +93,9 @@
  				spotLight.intensity = 2;
  				scene.add(spotLight);
 
- 				var texture3 = THREE.ImageUtils.loadTexture("../image/lensflare3.png");
- 				var texture0 = THREE.ImageUtils.loadTexture("../image/lensflare0.png");
- 				var texture4 = THREE.ImageUtils.loadTexture("../image/lensflare4.jpg");
+ 				var texture3 = THREE.ImageUtils.loadTexture("./image/lensflare3.png");
+ 				var texture0 = THREE.ImageUtils.loadTexture("./image/lensflare0.png");
+ 				var texture4 = THREE.ImageUtils.loadTexture("./image/lensflare4.jpg");
  				var lensflare = new THREE.LensFlare(texture4, 300, 0.0, THREE.AdditiveBlending, new THREE.Color(0xffaacc));
 
  				lensflare.add(texture3, 60, 0.6, THREE.AdditiveBlending);
