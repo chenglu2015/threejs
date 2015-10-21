@@ -76,6 +76,7 @@
 			var raycaster, intersects;
 			var mouse;
 			var INTERSECTED;
+			var cameraRadius;
 
 			var isModal = false;
 
@@ -153,6 +154,9 @@
  				function render(){
  					stats.update();
 
+ 					cameraRadius = Math.sqrt(camera.position.x * camera.position.x 
+ 						+ camera.position.y * camera.position.y + camera.position.z * camera.position.z);
+
  					// if(camera.position.z > 330){
 	 				// 	cloud.rotation.y = step;
 	 				// 	step += 0.001;
@@ -166,7 +170,7 @@
  					intersects = raycaster.intersectObject(cloud);
 
  					if ( intersects.length > 0 ) {
-						if ( INTERSECTED != intersects[ 0 ].index ) {
+						if ( INTERSECTED != intersects[ 0 ].index && cameraRadius < 350 ) {
 							scene.remove(sphere);
 							INTERSECTED = intersects[ 0 ].index;
 							sphere = focusParticle();

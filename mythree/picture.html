@@ -32,6 +32,8 @@
 		<script type="text/javascript">
 
 			var cameraRound;
+			var pictureIndex = 0, preIndex = 35;
+			var INOUT = 1;
 
 			//once everything is loaded, we run our Three.js stuff.
 			$(function () { 
@@ -100,6 +102,8 @@
 		        camera.lookAt(new THREE.Vector3(25, 0, 0));
 		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
+		        document.addEventListener( 'mousewheel', onMouseWheel, false );
+		        document.addEventListener( 'click', mouseClick, false);
 		        window.addEventListener( 'resize', onWindowResize, false );
 
  				//add animation
@@ -122,11 +126,30 @@
 				}
 
 				var step = 0;
-				var tmp = -1;
-				window.onclick = function mouseclick(){
+				function mouseClick(event){
 					if(step < 1){
+						INOUT = 1;
 						animate();
 					}
+
+				}
+
+				function onMouseWheel(event){
+					var delta = 0;
+			        if ( event.wheelDelta ) { // WebKit / Opera / Explorer 9
+			            delta = event.wheelDelta;
+			        } else if ( event.detail ) { // Firefox
+			            delta = - event.detail;
+			        }
+			        if(delta !== 0 && step < 1){
+			        	if(delta > 0){
+			        		INOUT = 1;
+			        	}
+			        	else{
+			        		INOUT = -1;
+			        	}
+			        	animate();
+			        }
 
 				}
 
@@ -134,7 +157,7 @@
 				function animate(){
 					var id = requestAnimationFrame(animate);
 
-					transAngle += Math.PI / 18 / 40;
+					transAngle += INOUT * Math.PI / 18 / 40;
 					var cameraX = radius * Math.cos(transAngle - delta);
 					var cameraZ = - radius * Math.sin(transAngle - delta);
 					var lookAtX = 25 * Math.cos(transAngle);
@@ -144,12 +167,15 @@
 
 
 					for(var index in planes){
-						if(planes[index].material.opacity >= 0.9999 || index == tmp){
-							tmp = index;
-							planes[index].material.opacity -= 0.07;
+
+						if(index == pictureIndex && INOUT == 1){
+							planes[index].material.opacity -= INOUT * 0.07;
+						}
+						else if(index == preIndex && INOUT == -1 ){
+							planes[index].material.opacity -= INOUT * 0.07;
 						}
 						else{
-							planes[index].material.opacity += 0.002;
+							planes[index].material.opacity += INOUT * 0.002;
 						}
 					}
 					renderer.render(scene, camera);
@@ -157,7 +183,21 @@
 
 					if(step > 39){
 						step = 0;
-						tmp = -1;
+						pictureIndex += INOUT;
+						preIndex += INOUT;
+						if(pictureIndex === -1){
+							pictureIndex = 35;
+						}
+						else if(pictureIndex === 36){
+							pictureIndex = 0;
+						}
+						if(preIndex === -1){
+							preIndex = 35;
+						}
+						else if(preIndex === 36){
+							preIndex = 0;
+						}
+
 						cancelAnimationFrame(id);
 					}
 				}
@@ -173,6 +213,8 @@
 				$("#Stats-output").append(stats.domElement);
 				return stats;
 			}
+
+
 
 
 
