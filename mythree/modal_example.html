@@ -54,7 +54,7 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div>
-						<img src="./image/pictures/0.JPG" width="400px" height="300px">
+						<img id="modalIMG" src="./image/pictures/0.JPG" width="400px" height="300px">
 					</div>
 					<div>
 						<p><strong>This is just a simple example~~~<strong></p>
@@ -66,33 +66,41 @@
 		<!-- Javascript code that runs our Three.js examples -->
 		<script type="text/javascript">
 
+			var scene, camera, renderer;
+
+			//camera move
 			var trackball;
 			var clock = new THREE.Clock();
 
-			var uniforms, attributes;
-
-			var PARTICLE_SIZE = 10;
-
+			//raycaster and intersects
 			var raycaster, intersects;
-			var mouse;
+			var mouse;  //mouse position
 			var INTERSECTED;
+			var cloud, vertices;
+			// radius from lookat positon to camera position
 			var cameraRadius;
+			var renderID;
+			var selects = [];  //the selected particle which will move
 
-			var isModal = false;
-
+			var RADIUS = 10;  //round radius
+			var isModal = false;  //modal status
 			var sTexture = THREE.ImageUtils.loadTexture("./image/pictures/0.JPG");
+			var FLYIN = true;
+			var flag;
+
+			var lines = [], infos = [];
 
 			//once everything is loaded, we run our Three.js stuff.
 			$(function () { 
  				var stats = initStats();
  				
  				//here we'll put the Three.js stuff
- 				var scene = new THREE.Scene();
+ 				scene = new THREE.Scene();
  				
  				//add camera and renderer
- 				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 400);
+ 				camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 400);
  				
- 				var renderer = new THREE.WebGLRenderer();
+ 				renderer = new THREE.WebGLRenderer();
  				renderer.setClearColor(0x000000, 1.0);
  				renderer.setSize(window.innerWidth, window.innerHeight);
  				renderer.shadowMapEnabled = true;
@@ -101,6 +109,7 @@
  				var ambientLight = new THREE.AmbientLight(0xffffff);
  				scene.add(ambientLight);
 
+ 				//init camera position and lookat
 		        camera.position.x = 0;
 		        camera.position.y = 0;
 		        camera.position.z = 600;
@@ -110,7 +119,7 @@
 		        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 		        document.addEventListener( 'click', onDocumentMouseClick, false );
 		        window.addEventListener( 'resize', onWindowResize, false );
-
+		        //trackball
 		        trackball = new THREE.TrackballControls(camera);
 				trackball.rotateSpeed = 0.005;
 				trackball.zoomSpeed = 0.1;
@@ -129,6 +138,10 @@
 					map: generateSprite()
 				});
 
+				var lineMaterial = new THREE.LineBasicMaterial({
+					color: 0x12e65c
+				});
+				//sphere radius and fluctuation range
 				var radius = 300;
 				var rand = 30;		        
 		        for(var i = 0; i < 100000; i++){
@@ -136,10 +149,9 @@
 		        	geom.vertices.push(particle);
 		        }
 
+		        cloud = new THREE.PointCloud(geom, material);
 
-		        var cloud = new THREE.PointCloud(geom, material);
-
-				var vertices = cloud.geometry.vertices;
+				vertices = cloud.geometry.vertices;
 
 	            scene.add(cloud);
 
@@ -152,39 +164,32 @@
  				//add animation
  				render();
  				function render(){
- 					stats.update();
-
+ 					stats.update();	
  					cameraRadius = Math.sqrt(camera.position.x * camera.position.x 
  						+ camera.position.y * camera.position.y + camera.position.z * camera.position.z);
 
- 					// if(camera.position.z > 330){
-	 				// 	cloud.rotation.y = step;
-	 				// 	step += 0.001;
-	 				// 	camera.position.z -= 1;
- 					// }
-
  					var delta = clock.getDelta();
  					trackball.update(delta);
-
+ 					
  					raycaster.setFromCamera(mouse, camera);
  					intersects = raycaster.intersectObject(cloud);
 
  					if ( intersects.length > 0 ) {
 						if ( INTERSECTED != intersects[ 0 ].index && cameraRadius < 350 ) {
-							scene.remove(sphere);
+							// scene.remove(sphere);
 							INTERSECTED = intersects[ 0 ].index;
-							sphere = focusParticle();
-							sphere.position.x = vertices[INTERSECTED].x;
-							sphere.position.y = vertices[INTERSECTED].y;
-							sphere.position.z = vertices[INTERSECTED].z;
-							scene.add(sphere);
+							// sphere = focusParticle();
+							// sphere.position.x = vertices[INTERSECTED].x;
+							// sphere.position.y = vertices[INTERSECTED].y;
+							// sphere.position.z = vertices[INTERSECTED].z;
+							// scene.add(sphere);
 						}
 					} else if ( INTERSECTED !== null ) {
-						scene.remove(sphere);
+						// scene.remove(sphere);
 						INTERSECTED = null;
 					}
 
- 					requestAnimationFrame(render);
+ 					renderID = requestAnimationFrame(render);
  					renderer.render(scene, camera);
  				};
 
@@ -207,77 +212,299 @@
 				}
 
 				function onDocumentMouseClick( event ){
+
+					if(INTERSECTED){
+						FLYIN = false;
+						cancelAnimationFrame(renderID);
+						selectRelationParticle(INTERSECTED);
+						
+						moveRender();
+						document.removeEventListener( 'click', onDocumentMouseClick, false );
+					}
+
+					
+					
+				}
+
+				function onDocumentContextmenu( event ){
+					document.removeEventListener( 'click', showMouseClick, false);
+					cancelAnimationFrame(renderID);
+					FLYIN = true;
+					for(var i = 0; i < 8; i++){
+						scene.remove(lines[i]);
+						scene.remove(infos[i]);
+					}
+					scene.remove(infos[8]);
+					lines = [];
+					infos = [];
+					for(var i = 0; i < 10; i++){
+						selects[i].state = -1;
+					}
+					moveRender();
+
+		     	  	document.removeEventListener( 'contextmenu', onDocumentContextmenu, false);
+				}
+
+
+				//render afte click particles
+				function moveRender(){
+					stats.update();
+					flag = 0;
+
+					for(var i = 0 ; i < 10; i ++){
+						var state = selects[i].state;
+						flag += state;
+						var np;
+						if(state === 0){
+							continue;
+						}
+						else if(state === 1){
+							np = selects[i].newPosition;
+						}
+						else if(state === -1){
+							np = selects[i].oldPosition;
+						}
+						var index = selects[i].index;
+						var speed = selects[i].speed;
+
+						var p = index < 0 ? camera.position : vertices[index];
+						
+						var delta = Math.abs(p.x - np.x) + Math.abs(p.y - np.y) + Math.abs(p.z - np.z);
+
+						if(delta > speed / 2){
+							var deltaX = -(p.x - np.x) / delta * speed;
+							var deltaY = -(p.y - np.y) / delta * speed;
+							var deltaZ = -(p.z - np.z) / delta * speed;
+
+							if(index < 0){
+								camera.position.x += deltaX;
+								camera.position.y += deltaY;
+								camera.position.z += deltaZ;
+							}
+							else{
+								vertices[index].x += deltaX;
+								vertices[index].y += deltaY;
+								vertices[index].z += deltaZ;
+							}
+
+							cloud.geometry.verticesNeedUpdate = true;
+						}
+						else{
+							selects[i].state = 0;
+						}
+
+					}
+					
+
+					camera.lookAt(scene.position);
+					renderID = requestAnimationFrame(moveRender);
+	 				renderer.render(scene, camera);
+
+ 					if(flag == 0){
+						if(FLYIN){
+							cancelAnimationFrame(renderID);
+							render();
+							document.addEventListener( 'click', onDocumentMouseClick, false);
+						}
+						else{
+							cancelAnimationFrame(renderID);
+							document.addEventListener( 'contextmenu', onDocumentContextmenu, false);
+							lineExtend();
+						}
+						
+					}
+				}
+
+				//line Extend when fly out
+				function lineExtend(){
+					var id = requestAnimationFrame(lineExtend);
+					step ++;
+
+					var v0 = vertices[selects[0].index];
+					
+					if(lines.length < 1){
+
+						for(var i = 1; i < 9; i++){
+							var v1 = new THREE.Vector3(vertices[selects[0].index].x, vertices[selects[0].index].y, vertices[selects[0].index].z);
+							var v2 = new THREE.Vector3(vertices[selects[0].index].x, vertices[selects[0].index].y, vertices[selects[0].index].z);
+							var geometry = new THREE.Geometry();
+							geometry.vertices.push(v1, v2);
+
+							var line = new THREE.Line( geometry, lineMaterial );
+							lines.push(line);
+							scene.add(line);
+						}
+					}
+					for(var i = 1; i < 9; i++){
+
+						var x = (vertices[selects[i].index].x - v0.x) / 60;
+						var y = (vertices[selects[i].index].y - v0.y) / 60;
+						var z = (vertices[selects[i].index].z - v0.z) / 60;
+						lines[i - 1].geometry.vertices[1].add(new THREE.Vector3(x, y, z));
+						lines[i - 1].geometry.verticesNeedUpdate = true;
+					}
+
+					renderer.render(scene, camera);
+					if(step >= 60){
+						step = 0;
+						cancelAnimationFrame(id);
+						showInfo();
+						showRender();
+						document.addEventListener( 'click', showMouseClick, false);
+					}
+				}
+
+				function showInfo(){
+					for(var i = 0; i < 9; i++){
+						var mesh = infoCircle(i);
+						mesh.position.set(vertices[selects[i].index].x, vertices[selects[i].index].y, vertices[selects[i].index].z + 1);
+						scene.add(mesh);
+						infos.push(mesh);
+					}
+				}
+
+				function showRender(){
+					stats.update();
+					renderID = requestAnimationFrame(showRender);
+
+					raycaster.setFromCamera(mouse, camera);
+ 					intersects = raycaster.intersectObjects(infos);
+
+ 					if ( intersects.length > 0 ) {
+						if ( INTERSECTED != intersects[ 0 ].object) {
+							INTERSECTED = intersects[ 0 ].object;
+						}
+					} else if ( INTERSECTED !== null ) {
+						INTERSECTED = null;
+					}
+
+
+					renderer.render(scene, camera);
+				}
+
+				function showMouseClick(event){
 					if(isModal){
 						isModal = false;
 						return false;
 					}
 					if(INTERSECTED != null && !isModal){
+						$("#modalIMG")[0].src = INTERSECTED.material.map.sourceFile;
 						$("#infoModal").modal("show");
 						isModal = true;
 					}
 				}
 
+				function selectRelationParticle(index){
+					selects = [];
+					var op = new THREE.Vector3(vertices[index].x, vertices[index].y, vertices[index].z);
+					var np = new THREE.Vector3(0, 0, 600);
+					var d = op.distanceTo(np);
+
+					selects.push({
+						index: index, oldPosition: op,
+						newPosition: np, speed: 5, state: 1
+					});
+
+					var angle = Math.PI / 4;
+
+					for(var i = 1; i < 9; i++){
+
+						var np = new THREE.Vector3(0, 0, 600);
+						var tmp = index + i;
+						if(tmp >= 100000){
+							tmp -= 100000;
+						}
+						var op = new THREE.Vector3(vertices[tmp].x, vertices[tmp].y, vertices[tmp].z);
+						np.x = RADIUS * Math.sin(angle * i);
+						np.y = RADIUS * Math.cos(angle * i);
+						var s = 5 * op.distanceTo(np) / d;
+
+						selects.push({
+							index: tmp, oldPosition: op,
+							newPosition: np, speed: s, state: 1
+						});
+
+					}
+
+					op = new THREE.Vector3(camera.position.x, camera.position.y, camera.position.z);
+					np = new THREE.Vector3(0, 0, 630);
+					selects.push({
+						index: -1, oldPosition: op,
+						newPosition: np, speed: 5.2, state: 1
+					})
+
+				}
+
+
+
+				function initStats(){
+					var stats = new Stats();
+					stats.setMode(0);
+					stats.domElement.style.position = 'absolute';
+					stats.domElement.style.lefe = '0px';
+					stats.domElement.style.top = '0px';
+					stats.domElement.style.opacity = '0.5';
+					$("#Stats-output").append(stats.domElement);
+					return stats;
+				}
+
+				function initParticle(radius, rand){
+					var x = 2 * radius * Math.random() - radius;
+					var delta = Math.sqrt(radius * radius - x * x);
+					var y = 2 * delta * Math.random() - delta;
+					var z = Math.sqrt(delta * delta - y * y);
+					if(Math.random() > 0.5){
+						z = 0 - z;
+					};
+					return new THREE.Vector3(x + Math.random() * rand - rand / 2, y + Math.random() * rand - rand / 2,
+						z + Math.random() * rand - rand / 2);
+				}
+
+				function focusParticle(){
+					var focusGeom = new THREE.SphereGeometry(2, 50, 50);
+					var focusMtl = new THREE.MeshBasicMaterial({color: 0xffffff});
+					focusMtl.map = sTexture;
+					var focusSphere = new THREE.Mesh(focusGeom, focusMtl);
+					focusSphere.name = "focus";
+					return focusSphere;
+				}
+
+				function infoCircle(i){
+					var circleGeom = new THREE.CircleGeometry(2, 50);
+					var circleMtl = new THREE.MeshBasicMaterial({color: 0xffffff});
+					circleMtl.map = THREE.ImageUtils.loadTexture("./image/pictures/" + i + ".JPG");;
+					var circle = new THREE.Mesh(circleGeom, circleMtl);
+					return circle;
+				}
+
+				function showModal(){
+					$("#infoModal").modal("show");
+				}
+
+				// from THREE.js examples
+		        function generateSprite() {
+
+		            var canvas = document.createElement('canvas');
+		            canvas.width = 16;
+		            canvas.height = 16;
+
+		            var context = canvas.getContext('2d');
+		            var gradient = context.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width / 2);
+		            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+		            gradient.addColorStop(0.2, 'rgba(0,255,255,1)');
+		            gradient.addColorStop(0.4, 'rgba(0,0,64,1)');
+		            gradient.addColorStop(1, 'rgba(0,0,0,1)');
+
+		            context.fillStyle = gradient;
+		            context.fillRect(0, 0, canvas.width, canvas.height);
+
+		            var texture = new THREE.Texture(canvas);
+		            texture.needsUpdate = true;
+		            return texture;
+
+		        }
+
 			});
-
-			function initStats(){
-				var stats = new Stats();
-				stats.setMode(0);
-				stats.domElement.style.position = 'absolute';
-				stats.domElement.style.lefe = '0px';
-				stats.domElement.style.top = '0px';
-				stats.domElement.style.opacity = '0.5';
-				$("#Stats-output").append(stats.domElement);
-				return stats;
-			}
-
-			function initParticle(radius, rand){
-				var x = 2 * radius * Math.random() - radius;
-				var delta = Math.sqrt(radius * radius - x * x);
-				var y = 2 * delta * Math.random() - delta;
-				var z = Math.sqrt(delta * delta - y * y);
-				if(Math.random() > 0.5){
-					z = 0 - z;
-				};
-				return new THREE.Vector3(x + Math.random() * rand - rand / 2, y + Math.random() * rand - rand / 2,
-					z + Math.random() * rand - rand / 2);
-			}
-
-			function focusParticle(){
-				var focusGeom = new THREE.SphereGeometry(2, 50, 50);
-				var focusMtl = new THREE.MeshBasicMaterial({color: 0xffffff});
-				focusMtl.map = sTexture;
-				var focusSphere = new THREE.Mesh(focusGeom, focusMtl);
-				focusSphere.name = "focus";
-				return focusSphere;
-			}
-
-			function showModal(){
-				$("#infoModal").modal("show");
-			}
-
-			// from THREE.js examples
-	        function generateSprite() {
-
-	            var canvas = document.createElement('canvas');
-	            canvas.width = 16;
-	            canvas.height = 16;
-
-	            var context = canvas.getContext('2d');
-	            var gradient = context.createRadialGradient(canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width / 2);
-	            gradient.addColorStop(0, 'rgba(255,255,255,1)');
-	            gradient.addColorStop(0.2, 'rgba(0,255,255,1)');
-	            gradient.addColorStop(0.4, 'rgba(0,0,64,1)');
-	            gradient.addColorStop(1, 'rgba(0,0,0,1)');
-
-	            context.fillStyle = gradient;
-	            context.fillRect(0, 0, canvas.width, canvas.height);
-
-	            var texture = new THREE.Texture(canvas);
-	            texture.needsUpdate = true;
-	            return texture;
-
-	        }
-
 
 		</script>
 

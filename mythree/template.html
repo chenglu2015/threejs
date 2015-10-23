@@ -68,6 +68,19 @@
 		        plane.receiveShadow = true;
 		        scene.add(plane);
 
+		        var material = new THREE.LineBasicMaterial({
+					color: 0xffff00
+				});
+
+				var geometry = new THREE.Geometry();
+				geometry.vertices.push(
+					new THREE.Vector3( -10, 3, 0 ),
+					new THREE.Vector3( -10, 3, 0 )
+				);
+
+				var line = new THREE.Line( geometry, material );
+				scene.add( line );
+
 
 		        camera.position.x = -30;
 		        camera.position.y = 40;
@@ -85,6 +98,9 @@
  				function render(){
  					stats.update();
  					orbit.update();
+
+ 					line.geometry.vertices[1].add(new THREE.Vector3(-0.5 + Math.random(), -0.5 + Math.random(), -0.5 + Math.random()));
+ 					line.geometry.verticesNeedUpdate = true;
 
  					requestAnimationFrame(render);
  					renderer.render(scene, camera);
