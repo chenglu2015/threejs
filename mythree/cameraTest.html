@@ -9,6 +9,7 @@
 		<script type="text/javascript" src="./libs/dat.gui.js"></script>
 		<script type="text/javascript" src="./libs/OrbitControls.js"></script>
 		<script type="text/javascript" src="./js/cameraRound.js"></script>
+		<script type="text/javascript" src="./js/PlaneControls.js"></script>
 		<style >
 			body{
 				/* set margin to 0 and overflow to hidden, to use the complete page */
@@ -33,6 +34,7 @@
 
 			var orbit;
 			var roundControls;
+			var planeControls;
 			var mouse = new THREE.Vector2();
 
 			//once everything is loaded, we run our Three.js stuff.
@@ -77,13 +79,13 @@
 		        scene.add(box);
 
 
-		        camera.position.x = -30;
-		        camera.position.y = 0;
-		        camera.position.z = 30;
-		        camera.lookAt(scene.position);
+		        camera.position.x = 10;
+		        camera.position.y = 30;
+		        camera.position.z = 70;
 		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
-		        roundControls = new THREE.RoundControls(camera, renderer.domElement);
+		        planeControls = new THREE.PlaneControls(camera, new THREE.Vector3(0, 30, 0), renderer.domElement);
+		        // roundControls = new THREE.RoundControls(camera, renderer.domElement);
 		        // roundControls.userRotateSpeed = 0.5;
 		        // orbit = new THREE.OrbitControls(camera, renderer.domElement);
 
@@ -94,8 +96,11 @@
  				render();
  				function render(){
  					stats.update();
- 					roundControls.update();
+ 					planeControls.update();
+ 					// roundControls.update();
  					// orbit.update();
+
+ 					// console.log(camera.position);
 
  					requestAnimationFrame(render);
  					renderer.render(scene, camera);

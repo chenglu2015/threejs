@@ -82,9 +82,9 @@
 				scene.add( line );
 
 
-		        camera.position.x = -30;
+		        camera.position.x = 10;
 		        camera.position.y = 40;
-		        camera.position.z = 30;
+		        camera.position.z = 10;
 		        camera.lookAt(scene.position);
 		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
@@ -94,13 +94,19 @@
 		        window.addEventListener( 'resize', onWindowResize, false );
 
  				//add animation
+ 				var point = new THREE.Vector3(0, 0, 0);
+ 				var count = 0;
  				render();
+ 				
  				function render(){
  					stats.update();
- 					orbit.update();
+ 					// orbit.update();
 
- 					line.geometry.vertices[1].add(new THREE.Vector3(-0.5 + Math.random(), -0.5 + Math.random(), -0.5 + Math.random()));
- 					line.geometry.verticesNeedUpdate = true;
+ 					camera.rotation.z += 0.01;
+ 					console.log(camera.position);
+ 					// count ++;
+ 					// point.z = count;
+ 					// camera.lookAt(point);
 
  					requestAnimationFrame(render);
  					renderer.render(scene, camera);

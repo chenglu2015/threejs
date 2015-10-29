@@ -8,6 +8,7 @@
 		<script type="text/javascript" src="./libs/stats.js"></script>
 		<script type="text/javascript" src="./libs/dat.gui.js"></script>
 		<script type="text/javascript" src="./libs/OrbitControls.js"></script>
+		<script type="text/javascript" src="./js/basic.js"></script>
 		<style >
 			body{
 				/* set margin to 0 and overflow to hidden, to use the complete page */
@@ -83,8 +84,8 @@
 
 		        orbit = new THREE.OrbitControls(camera, renderer.domElement);
 
-		        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-		        window.addEventListener( 'resize', onWindowResize, false );
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				window.addEventListener( 'resize', onWindowResize, false );
 
 		        var pMaterial = new THREE.PointCloudMaterial( {
 					color: 0xFFFFFF,
@@ -172,17 +173,16 @@
 
 				}
 
+				function initStats(){
+					var stats = new Stats();
+					stats.setMode(0);
+					stats.domElement.style.position = 'absolute';
+					stats.domElement.style.lefe = '0px';
+					stats.domElement.style.top = '0px';
+					$("#Stats-output").append(stats.domElement);
+					return stats;
+				}
 			});
-
-			function initStats(){
-				var stats = new Stats();
-				stats.setMode(0);
-				stats.domElement.style.position = 'absolute';
-				stats.domElement.style.lefe = '0px';
-				stats.domElement.style.top = '0px';
-				$("#Stats-output").append(stats.domElement);
-				return stats;
-			}
 
 
 
