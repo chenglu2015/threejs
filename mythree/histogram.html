@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>Histogram</title>
+		<script type="text/javascript" src="./libs/three.js"></script>
+		<script type="text/javascript" src="./libs/jquery-1.9.0.js"></script>
+		<script type="text/javascript" src="./libs/stats.js"></script>
+		<script type="text/javascript" src="./libs/dat.gui.js"></script>
+		<script type="text/javascript" src="./libs/OrbitControls.js"></script>
+		<script type="text/javascript" src="./assets/fonts/helvetiker_regular.typeface.js"></script>
+	    <script type="text/javascript" src="./assets/fonts/helvetiker_bold.typeface.js"></script>
+	    <script type="text/javascript" src="./assets/fonts/bitstream_vera_sans_mono_roman.typeface.js"></script>
+		<script type="text/javascript" src="./js/3D-histogram.js"></script>
+		<style >
+			body{
+				/* set margin to 0 and overflow to hidden, to use the complete page */
+
+				margin: 0;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<!-- Div which will hold the Output -->
+		<div id="WebGL-output">
+		</div>
+
+		<!-- Div which will show the stats -->
+		<div id="Stats-output">
+		</div>
+
+		<!-- Javascript code that runs our Three.js examples -->
+		<script type="text/javascript">
+
+			var orbit;
+
+			//raycaster and intersects
+			var raycaster = new THREE.Raycaster();
+			var intersects, INTERSECTED;
+			var mouse = new THREE.Vector2();
+
+
+			//once everything is loaded, we run our Three.js stuff.
+			$(function () { 
+ 				var stats = initStats();
+ 				
+ 				//here we'll put the Three.js stuff
+ 				var scene = new THREE.Scene();
+ 				
+ 				//add camera and renderer
+ 				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+ 				
+ 				var renderer = new THREE.WebGLRenderer();
+ 				renderer.setClearColor(0xEEEEEE, 1.0);
+ 				renderer.setSize(window.innerWidth, window.innerHeight);
+ 				renderer.shadowMapEnabled = true;
+
+ 				//add Light
+ 				var ambientLight = new THREE.AmbientLight(0x999999);
+ 				scene.add(ambientLight);
+
+ 				// var spotLight = new THREE.SpotLight(0xffffff);
+ 				// spotLight.castShadow = true;
+ 				// spotLight.position.set(10, 10, -10);
+ 				// scene.add(spotLight);
+
+ 				//add plane
+ 				var planeGeo = new THREE.PlaneGeometry(300,300,1,1);
+ 				var planeMtr = new THREE.MeshLambertMaterial({color: 0xffffff});
+ 				var plane = new THREE.Mesh(planeGeo, planeMtr);
+ 				plane.rotation.x = -0.5 * Math.PI;
+		        plane.position.x = 0;
+		        plane.position.y = 0;
+		        plane.position.z = 0;
+		        plane.receiveShadow = true;
+		        scene.add(plane);
+
+		        var len1 = 10, len2 = 20;
+		        var range = 10;
+		        var data = [];
+		        for(var i = 0; i < len1; i++){
+		        	for(var j = 0; j < len2; j++){
+		        		var num = range * Math.random();
+		        		var d = {"x": "aaa" + i, "z": "bbb" + j, "num":num};
+		        		data.push(d);
+		        	}
+		        }
+
+
+		        var histogram = new THREE.Histogram(4, scene);
+		        histogram.addData(data);
+		        histogram.draw();
+
+		        camera.position.x = -50;
+		        camera.position.y = 30;
+		        camera.position.z = -30;
+		        camera.lookAt(scene.position);
+		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+		        orbit = new THREE.OrbitControls(camera, renderer.domElement);
+
+		        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		        window.addEventListener( 'resize', onWindowResize, false );
+
+ 				//add animation
+ 				render();
+ 				
+ 				function render(){
+ 					stats.update();
+ 					orbit.update();
+
+ 					raycaster.setFromCamera(mouse, camera);
+	 				intersects = raycaster.intersectObjects(histogram.boxArray);
+
+	 				if(intersects.length > 0){
+	 					if(INTERSECTED != intersects[0].object){
+	 						INTERSECTED = intersects[0].object;
+	 						// histogram.showNum(INTERSECTED.position);
+	 					}
+	 				}
+	 				else if(INTERSECTED != null){
+	 					INTERSECTED = null;
+	 				}
+
+ 					requestAnimationFrame(render);
+ 					renderer.render(scene, camera);
+ 				};
+
+ 				function onWindowResize() {
+
+					camera.aspect = window.innerWidth / window.innerHeight;
+					camera.updateProjectionMatrix();
+
+					renderer.setSize( window.innerWidth, window.innerHeight );
+
+				}
+
+				function onDocumentMouseMove( event ) {
+
+					event.preventDefault();
+
+					mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+					mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+				}
+
+			});
+
+			function initStats(){
+				var stats = new Stats();
+				stats.setMode(0);
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.lefe = '0px';
+				stats.domElement.style.top = '0px';
+				$("#Stats-output").append(stats.domElement);
+				return stats;
+			}
+
+
+
+		</script>
+
+	</body>
+</html>

@@ -2,7 +2,12 @@
 
 <html>
 	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<title>Bezier Surface</title>
+		<!--<link rel="shortcut icon" type="image/ico" href="{{STATIC_URL}}assets/images/htyun.ico">-->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
 		<script type="text/javascript" src="./libs/three.js"></script>
 		<script type="text/javascript" src="./libs/jquery-1.9.0.js"></script>
 		<script type="text/javascript" src="./libs/stats.js"></script>
@@ -11,6 +16,14 @@
 		<script type="text/javascript" src="./js/PlaneControls.js"></script>
 		<script type="text/javascript" src="./js/BezierSurface.js"></script>
 		<script type="text/javascript" src="./js/ParticleMaterial.js"></script>
+		<script type="text/javascript" src="./assets/javascripts/bootstrap.js"></script>
+		<script type="text/javascript" src="./assets/javascripts/pixel-admin.js"></script> 
+
+		<link rel="stylesheet" type="text/css" href="./assets/stylesheets/bootstrap.css">
+		<link rel="stylesheet" type="text/css" href="./assets/stylesheets/pixel-admin.css">
+		<link rel="stylesheet" type="text/css" href="./assets/stylesheets/widgets.css">
+		<link rel="stylesheet" type="text/css" href="./assets/stylesheets/rtl.css">
+		<link rel="stylesheet" type="text/css" href="./assets/stylesheets/themes.css">
 		<style >
 			body{
 				/* set margin to 0 and overflow to hidden, to use the complete page */
@@ -18,9 +31,29 @@
 				margin: 0;
 				overflow: hidden;
 			}
+			#searchInput{
+				opacity:1;
+				position:absolute;
+				top:30%;
+				left:0px;
+				width:200px
+			}
+			#searchIcon{
+				border:none;
+				background: #fff;
+				background: rgba(0,0,0,.05);
+			}
+			#searchContext{
+				border:none;
+				background: #fff;
+				background: rgba(0,0,0,.05);
+			}
+
 		</style>
 	</head>
 	<body>
+
+		<script>var init = [];</script>
 
 		<!-- Div which will hold the Output -->
 		<div id="WebGL-output">
@@ -28,6 +61,202 @@
 
 		<!-- Div which will show the stats -->
 		<div id="Stats-output">
+		</div>
+
+		<div id="searchInput">
+			<div class="input-group no-margin">
+				<span id="searchIcon" class="input-group-addon" ><i class="fa fa-search"></i></span>
+				<input id="searchContext" type="text" placeholder="Search..." class="form-control no-padding-hr" >
+			</div>
+		</div>
+
+		<div id="infoModal" class="modal fade" tabindex="-1" role="dialog" style="display:none;" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-body">
+						<div class="content-wrapper">
+							<div id="page-header">
+								<h1><i class="fa fa-th-large page-header-icon"></i>&nbsp;&nbsp;基本信息</h1>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+									<div class="panel panel-danger panel-dark panel-body-colorful widget-profile widget-profile-centered">
+										<div class="panel-heading">
+											<img src="assets/demo/avatars/2.jpg" alt="" class="widget-profile-avatar">
+											<div class="widget-profile-header">
+												<span>付xx</span><br>
+												<a href="#">职业：xxxx公司</a>
+											</div>
+										</div> <!-- / .panel-heading -->
+										<div class="panel-body">
+											<div class="widget-profile-text" style="padding: 0;">
+												个人档案、在案记录等
+											</div>
+										</div>
+									</div> <!-- / .panel -->
+
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+
+					<!-- 13. $NOTIFICATIONS ============================================================================
+
+									Notifications
+					-->
+									<div class="panel widget-notifications">
+										<div class="panel-heading">
+											<span class="panel-title"><i class="panel-title-icon fa fa-fire"></i>记录事件</span>
+										</div> <!-- / .panel-heading -->
+										<div class="panel-body padding-sm">
+											<div class="notifications-list">
+
+												<div class="notification">
+													<div class="notification-title text-danger">地点</div>
+													<div class="notification-description"><strong>事件：</strong>xxxxxxxxx</div>
+													<div class="notification-ago">时间</div>
+													<div class="notification-icon fa fa-hdd-o bg-danger"></div>
+												</div> <!-- / .notification -->
+
+												<div class="notification">
+													<div class="notification-title text-info">地点</div>
+													<div class="notification-description"><strong>事件：</strong>xxxxxxxxx</div>
+													<div class="notification-ago">10月28日</div>
+													<div class="notification-icon fa fa-truck bg-info"></div>
+												</div> <!-- / .notification -->
+
+												<div class="notification">
+													<div class="notification-title text-default">地点</div>
+													<div class="notification-description"><strong>事件：</strong>xxxxxxxxx</div>
+													<div class="notification-ago">5月8日</div>
+													<div class="notification-icon fa fa-clock-o bg-default"></div>
+												</div> <!-- / .notification -->
+
+												<div class="notification">
+													<div class="notification-title text-success">地点</div>
+													<div class="notification-description"><strong>事件：</strong>xxxxxxxxx</div>
+													<div class="notification-ago">3月14日</div>
+													<div class="notification-icon fa fa-hdd-o bg-success"></div>
+												</div> <!-- / .notification -->
+
+												<div class="notification">
+													<div class="notification-title text-warning">地点</div>
+													<div class="notification-description"><strong>事件：</strong>xxxxxxxxx</div>
+													<div class="notification-ago">1月20日</div>
+													<div class="notification-icon fa fa-hdd-o bg-warning"></div>
+												</div> <!-- / .notification -->
+
+											</div>
+											<a href="#" class="notifications-link">更多行踪信息</a>
+										</div> <!-- / .panel-body -->
+									</div> <!-- / .panel -->
+					<!-- /13. $NOTIFICATIONS -->
+
+					<!-- 14. $TASKS ====================================================================================
+
+									Tasks
+					-->
+									<!-- Javascript -->
+									<script>
+										init.push(function () {
+											$('.widget-tasks .panel-body').pixelTasks().sortable({
+												axis: "y",
+												handle: ".task-sort-icon",
+												stop: function( event, ui ) {
+													// IE doesn't register the blur when sorting
+													// so trigger focusout handlers to remove .ui-state-focus
+													ui.item.children( ".task-sort-icon" ).triggerHandler( "focusout" );
+												}
+											});
+											$('#clear-completed-tasks').click(function () {
+												$('.widget-tasks .panel-body').pixelTasks('clearCompletedTasks');
+											});
+										});
+									</script>
+									<!-- / Javascript -->
+
+									<div class="panel widget-tasks">
+										<div class="panel-heading">
+											<span class="panel-title"><i class="panel-title-icon fa fa-tasks"></i>Tasks</span>
+										</div> <!-- / .panel-heading -->
+										<div class="panel-body">
+
+											<div class="task">
+												<span class="label label-warning pull-right">High</span>
+												<div class="fa fa-arrows-v task-sort-icon"></div>
+												<div class="action-checkbox">
+													<label class="px-single"><input type="checkbox" name="" value="" class="px"><span class="lbl"></span></label>
+												</div>
+												<a href="#" class="task-title">A very important task<span>1 hour left</span></a>
+											</div> <!-- / .task -->
+
+											<div class="task completed">
+												<span class="label label-warning pull-right">High</span>
+												<div class="fa fa-arrows-v task-sort-icon"></div>
+												<div class="action-checkbox">
+													<label class="px-single"><input type="checkbox" name="" value="" class="px" checked="checked"><span class="lbl"></span></label>
+												</div>
+												<a href="#" class="task-title">A very important task<span>58 minutes left</span></a>
+											</div> <!-- / .task -->
+
+											<div class="task completed">
+												<div class="fa fa-arrows-v task-sort-icon"></div>
+												<div class="action-checkbox">
+													<label class="px-single"><input type="checkbox" name="" value="" class="px" checked="checked"><span class="lbl"></span></label>
+												</div>
+												<a href="#" class="task-title">A regular task</a>
+											</div> <!-- / .task -->
+
+											<div class="task">
+												<div class="fa fa-arrows-v task-sort-icon"></div>
+												<div class="action-checkbox">
+													<label class="px-single"><input type="checkbox" name="" value="" class="px"><span class="lbl"></span></label>
+												</div>
+												<a href="#" class="task-title">A regular task</a>
+											</div> <!-- / .task -->
+
+											<div class="task">
+												<div class="fa fa-arrows-v task-sort-icon"></div>
+												<div class="action-checkbox">
+													<label class="px-single"><input type="checkbox" name="" value="" class="px"><span class="lbl"></span></label>
+												</div>
+												<a href="#" class="task-title">A regular task</a>
+											</div> <!-- / .task -->
+
+											<div class="task">
+												<span class="label pull-right">Low</span>
+												<div class="fa fa-arrows-v task-sort-icon"></div>
+												<div class="action-checkbox">
+													<label class="px-single"><input type="checkbox" name="" value="" class="px"><span class="lbl"></span></label>
+												</div>
+												<a href="#" class="task-title">An unimportant task</a>
+											</div> <!-- / .task -->
+
+											<div class="task">
+												<span class="label pull-right">Low</span>
+												<div class="fa fa-arrows-v task-sort-icon"></div>
+												<div class="action-checkbox">
+													<label class="px-single"><input type="checkbox" name="" value="" class="px"><span class="lbl"></span></label>
+												</div>
+												<a href="#" class="task-title">An unimportant task</a>
+											</div> <!-- / .task -->
+
+										</div> <!-- / .panel-body -->
+										<div class="panel-footer clearfix">
+											<div class="pull-right">
+												<button class="btn btn-xs" id="clear-completed-tasks"><i class="fa fa-eraser text-success"></i> Clear completed tasks</button>
+											</div>
+										</div> <!-- / .panel-body -->
+									</div> <!-- / .panel -->
+					<!-- /14. $TASKS -->
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+			</div>
 		</div>
 
 		<script type="x-shader/x-vertex" id="vertexshader">
@@ -72,14 +301,22 @@
 		<!-- Javascript code that runs our Three.js examples -->
 		<script type="text/javascript">
 
-			var mouse = new THREE.Vector2();
+			//raycaster and intersects
+			var raycaster = new THREE.Raycaster();
+			var intersects, INTERSECTED;
+			var mouse = new THREE.Vector2();  //mouse position
+			var showAngle = Math.PI * 3 / 10 - 0.001;
+			var enlarge = -1, shrink = -1;
+
 			//camera move
 			var planeControls;
 
 			var uniforms;
 
+			var isModal = false;
+
 			//once everything is loaded, we run our Three.js stuff.
-			$(function () { 
+			init.push(function () { 
  				var stats = initStats();
  				
  				//here we'll put the Three.js stuff
@@ -96,13 +333,14 @@
 		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
 		        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		        document.addEventListener( 'click', onDocumentMouseClick, false);
 		        window.addEventListener( 'resize', onWindowResize, false );
 
 		        //trackball
-		        trackball = new THREE.TrackballControls(camera);
-				trackball.rotateSpeed = 0.005;
-				trackball.zoomSpeed = 1;
-				trackball.panSpeed = 1;
+		  //       trackball = new THREE.TrackballControls(camera);
+				// trackball.rotateSpeed = 0.005;
+				// trackball.zoomSpeed = 1;
+				// trackball.panSpeed = 1;
 				//planeControls
 				camera.position.x = 200;
 		        camera.position.y = 100;
@@ -163,49 +401,49 @@
 				var colors = new Float32Array( particles * 3 );
 				var sizes = new Float32Array( particles );
 
-				var count = 0;
-				for(var i = 0; i < segment; i++){
-		        	var u = i / segment;
-		        	for(var j = 0; j < segment; j++){
-		        		var v = j / segment;
-		        		var particle = getBezierSurfacePoint(u, v, m, n, p);
-		        		particle.x += - roll / 2 + roll * Math.random();
-		        		particle.y += - roll / 2 + roll * Math.random();
-		        		particle.z += - roll / 2 + roll * Math.random();
+				// var count = 0;
+				// for(var i = 0; i < segment; i++){
+		  //       	var u = i / segment;
+		  //       	for(var j = 0; j < segment; j++){
+		  //       		var v = j / segment;
+		  //       		var particle = getBezierSurfacePoint(u, v, m, n, p);
+		  //       		particle.x += - roll / 2 + roll * Math.random();
+		  //       		particle.y += - roll / 2 + roll * Math.random();
+		  //       		particle.z += - roll / 2 + roll * Math.random();
 
-		        		positions[ count * 3 + 0 ] = particle.x;
-						positions[ count * 3 + 1 ] = particle.y;
-						positions[ count * 3 + 2 ] = particle.z;
+		  //       		positions[ count * 3 + 0 ] = particle.x;
+				// 		positions[ count * 3 + 1 ] = particle.y;
+				// 		positions[ count * 3 + 2 ] = particle.z;
 
-						var color = new THREE.Color();
-						color.setHSL( 6000 / particles, 1.0, 0.5 );
+				// 		var color = new THREE.Color();
+				// 		color.setHSL( 6000 / particles, 1.0, 0.5 );
 
-						colors[ count * 3 + 0 ] = color.r;
-						colors[ count * 3 + 1 ] = color.g;
-						colors[ count * 3 + 2 ] = color.b;
+				// 		colors[ count * 3 + 0 ] = color.r;
+				// 		colors[ count * 3 + 1 ] = color.g;
+				// 		colors[ count * 3 + 2 ] = color.b;
 
-						sizes[ count ] = 2 * psize;
-						count ++;
+				// 		sizes[ count ] = 2 * psize;
+				// 		count ++;
 
-		        	}
-		        }
+		  //       	}
+		  //       }
 
-				// for ( var i = 0, i3 = 0; i < particles; i ++, i3 += 3 ) {
+				for ( var i = 0, i3 = 0; i < particles; i ++, i3 += 3 ) {
 
-				// 	positions[ i3 + 0 ] = ( Math.random() * 2 - 1 ) * radius;
-				// 	positions[ i3 + 1 ] = ( Math.random() * 2 - 1 ) * radius;
-				// 	positions[ i3 + 2 ] = ( Math.random() * 2 - 1 ) * radius;
+					positions[ i3 + 0 ] = ( Math.random() * 2 - 1 ) * radius;
+					positions[ i3 + 1 ] = ( Math.random() * 2 - 1 ) * radius;
+					positions[ i3 + 2 ] = ( Math.random() * 2 - 1 ) * radius;
 
-				// 	var color = new THREE.Color();
-				// 	color.setHSL( 6000 / particles, 1.0, 0.5 );
+					var color = new THREE.Color();
+					color.setHSL( 6000 / particles, 1.0, 0.5 );
 
-				// 	colors[ i3 + 0 ] = color.r;
-				// 	colors[ i3 + 1 ] = color.g;
-				// 	colors[ i3 + 2 ] = color.b;
+					colors[ i3 + 0 ] = color.r;
+					colors[ i3 + 1 ] = color.g;
+					colors[ i3 + 2 ] = color.b;
 
-				// 	sizes[ i ] = 2 * psize;
+					sizes[ i ] = 2 * psize;
 
-				// }
+				}
 
 				geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
 				geometry.addAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );
@@ -228,11 +466,47 @@
 
 					for ( var i = 0; i < particles; i++ ) {
 
-						sizes[ i ] = psize * ( 1 + Math.abs(Math.sin( 0.1 * i + time )) );
+						if(i == shrink){
+							if(sizes[i] >= 20){
+								sizes[i] -= 9;
+							}
+							else{
+								shrink = -1;
+							}
+						}
+						else if(i == enlarge){
+							if(sizes[i] <= 101){
+								sizes[i] += 9;
+							}
+						}
+						else{
+							sizes[ i ] = psize * ( 1 + Math.abs(Math.sin( 0.1 * i + time )) );	
+						}
 
 					}
 
-					geometry.attributes.size.needsUpdate = true;
+
+					if(planeControls.getZoomAngle() > showAngle){
+						raycaster.setFromCamera(mouse, camera);
+	 					intersects = raycaster.intersectObject(particleSystem);
+
+	 					if(intersects.length > 0){
+	 						if(INTERSECTED != intersects[0].index){
+	 							if(INTERSECTED != null){
+	 								shrink = INTERSECTED;	
+	 							}
+	 							INTERSECTED = intersects[0].index;
+	 							enlarge = INTERSECTED;
+	 						}
+	 					}
+	 					else if(INTERSECTED != null){
+	 						shrink = INTERSECTED;
+	 						enlarge = -1;
+	 						INTERSECTED = null;
+	 					}
+	 				}
+
+ 					geometry.attributes.size.needsUpdate = true;
 
  					requestAnimationFrame(render);
  					renderer.render(scene, camera);
@@ -256,22 +530,30 @@
 
 				}
 
+				function onDocumentMouseClick( event ){
+					if(isModal){
+						isModal = false;
+						return false;
+					}
+					if(INTERSECTED != null && !isModal){
+						$("#infoModal").modal("show");
+						isModal = true;
+					}
+				}
+
+				function initStats(){
+					var stats = new Stats();
+					stats.setMode(0);
+					stats.domElement.style.position = 'absolute';
+					stats.domElement.style.lefe = '0px';
+					stats.domElement.style.top = '0px';
+					$("#Stats-output").append(stats.domElement);
+					return stats;
+				}
+
 			});
-
-			function initStats(){
-				var stats = new Stats();
-				stats.setMode(0);
-				stats.domElement.style.position = 'absolute';
-				stats.domElement.style.lefe = '0px';
-				stats.domElement.style.top = '0px';
-				$("#Stats-output").append(stats.domElement);
-				return stats;
-			}
-
-	        
-
-      		
-
+	
+			window.PixelAdmin.start(init);
 
 		</script>
 

@@ -28,6 +28,10 @@ THREE.PlaneControls = function (object, lookAt, domElement) {
 
 	var scope = this;
 
+    this.getZoomAngle = function () {
+        return zoomAngle;
+    }
+
 	//distance is a vector3
     this.pan = function ( distance ) {
 
@@ -42,7 +46,6 @@ THREE.PlaneControls = function (object, lookAt, domElement) {
         this.object.position.add( distance );
         this.center.add( distance );
 
-        console.log(this.object.position);
     };
 
 
