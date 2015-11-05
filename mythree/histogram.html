@@ -8,6 +8,7 @@
 		<script type="text/javascript" src="./libs/stats.js"></script>
 		<script type="text/javascript" src="./libs/dat.gui.js"></script>
 		<script type="text/javascript" src="./libs/OrbitControls.js"></script>
+		<script type="text/javascript" src="./libs/controls/TrackballControls.js"></script>
 		<script type="text/javascript" src="./assets/fonts/helvetiker_regular.typeface.js"></script>
 	    <script type="text/javascript" src="./assets/fonts/helvetiker_bold.typeface.js"></script>
 	    <script type="text/javascript" src="./assets/fonts/bitstream_vera_sans_mono_roman.typeface.js"></script>
@@ -35,6 +36,7 @@
 		<script type="text/javascript">
 
 			var orbit;
+			// var controls;
 
 			//raycaster and intersects
 			var raycaster = new THREE.Raycaster();
@@ -48,6 +50,7 @@
  				
  				//here we'll put the Three.js stuff
  				var scene = new THREE.Scene();
+ 				scene.fog = new THREE.Fog(0xffffff, 0.015, 500);
  				
  				//add camera and renderer
  				var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -67,7 +70,7 @@
  				// scene.add(spotLight);
 
  				//add plane
- 				var planeGeo = new THREE.PlaneGeometry(300,300,1,1);
+ 				var planeGeo = new THREE.PlaneGeometry(5000,5000,1,1);
  				var planeMtr = new THREE.MeshLambertMaterial({color: 0xffffff});
  				var plane = new THREE.Mesh(planeGeo, planeMtr);
  				plane.rotation.x = -0.5 * Math.PI;
@@ -76,6 +79,18 @@
 		        plane.position.z = 0;
 		        plane.receiveShadow = true;
 		        scene.add(plane);
+
+		  //       var helper = new THREE.GridHelper( 1000, 5 );
+				// helper.rotation.x = Math.PI / 2;
+				// scene.add( helper );
+
+				// var helper = new THREE.GridHelper( 1000, 5 );
+				// helper.rotation.z = Math.PI / 2;
+				// scene.add( helper );
+				
+				var helper = new THREE.GridHelper( 1000, 5 );
+				// helper.rotation.x = Math.PI / 2;
+				scene.add( helper );
 
 		        var len1 = 10, len2 = 20;
 		        var range = 10;
@@ -89,7 +104,7 @@
 		        }
 
 
-		        var histogram = new THREE.Histogram(4, scene);
+		        var histogram = new THREE.Histogram(5, camera, scene);
 		        histogram.addData(data);
 		        histogram.draw();
 
@@ -97,12 +112,45 @@
 		        camera.position.y = 30;
 		        camera.position.z = -30;
 		        camera.lookAt(scene.position);
+		        // camera.lookAt(new THREE.Vector3(0, 10, 10));
 		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
 		        orbit = new THREE.OrbitControls(camera, renderer.domElement);
+		        // controls = new THREE.TrackballControls(camera, renderer.domElement);
 
 		        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		        // document.addEventListener( 'click', onDocumentMouseClick, false );
+		        // document.addEventListener( 'contextmenu', onDocumentContextMenu, false );
 		        window.addEventListener( 'resize', onWindowResize, false );
+
+		         var controls = new function() {
+		         	this.summaryZ = function(){
+		         		histogram.summaryZ();
+		         	}
+
+		         	this.summaryX = function(){
+		         		histogram.summaryX();
+		         	}
+		         	this.back = function(){
+		         		histogram.back();
+		         	}
+
+		         	this.speed = 1;
+		         	this.showAxis = false;
+		         }
+
+		         var gui = new dat.GUI();
+		         gui.add(controls, "summaryZ");
+		         gui.add(controls, "summaryX");
+		         gui.add(controls, "back");
+		         gui.add(controls, "speed", 0, 3).onChange(function (e){
+		         	histogram.setSpeed(e);
+		         });
+		         gui.add(controls, "showAxis").onChange(function (e){
+		         	histogram.showAxis(e);
+		         });
+
+
 
  				//add animation
  				render();
@@ -110,19 +158,21 @@
  				function render(){
  					stats.update();
  					orbit.update();
+ 					// controls.update();
+ 					histogram.update();
 
- 					raycaster.setFromCamera(mouse, camera);
-	 				intersects = raycaster.intersectObjects(histogram.boxArray);
+ 					// raycaster.setFromCamera(mouse, camera);
+	 				// intersects = raycaster.intersectObjects(histogram.boxArray);
 
-	 				if(intersects.length > 0){
-	 					if(INTERSECTED != intersects[0].object){
-	 						INTERSECTED = intersects[0].object;
-	 						// histogram.showNum(INTERSECTED.position);
-	 					}
-	 				}
-	 				else if(INTERSECTED != null){
-	 					INTERSECTED = null;
-	 				}
+	 				// if(intersects.length > 0){
+	 				// 	if(INTERSECTED != intersects[0].object){
+	 				// 		INTERSECTED = intersects[0].object;
+	 				// 		// histogram.showNum(INTERSECTED.position);
+	 				// 	}
+	 				// }
+	 				// else if(INTERSECTED != null){
+	 				// 	INTERSECTED = null;
+	 				// }
 
  					requestAnimationFrame(render);
  					renderer.render(scene, camera);
@@ -145,6 +195,7 @@
 					mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
 				}
+
 
 			});
 
