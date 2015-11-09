@@ -401,49 +401,49 @@
 				var colors = new Float32Array( particles * 3 );
 				var sizes = new Float32Array( particles );
 
-				// var count = 0;
-				// for(var i = 0; i < segment; i++){
-		  //       	var u = i / segment;
-		  //       	for(var j = 0; j < segment; j++){
-		  //       		var v = j / segment;
-		  //       		var particle = getBezierSurfacePoint(u, v, m, n, p);
-		  //       		particle.x += - roll / 2 + roll * Math.random();
-		  //       		particle.y += - roll / 2 + roll * Math.random();
-		  //       		particle.z += - roll / 2 + roll * Math.random();
+				var count = 0;
+				for(var i = 0; i < segment; i++){
+		        	var u = i / segment;
+		        	for(var j = 0; j < segment; j++){
+		        		var v = j / segment;
+		        		var particle = getBezierSurfacePoint(u, v, m, n, p);
+		        		particle.x += - roll / 2 + roll * Math.random();
+		        		particle.y += - roll / 2 + roll * Math.random();
+		        		particle.z += - roll / 2 + roll * Math.random();
 
-		  //       		positions[ count * 3 + 0 ] = particle.x;
-				// 		positions[ count * 3 + 1 ] = particle.y;
-				// 		positions[ count * 3 + 2 ] = particle.z;
+		        		positions[ count * 3 + 0 ] = particle.x;
+						positions[ count * 3 + 1 ] = particle.y;
+						positions[ count * 3 + 2 ] = particle.z;
 
-				// 		var color = new THREE.Color();
-				// 		color.setHSL( 6000 / particles, 1.0, 0.5 );
+						var color = new THREE.Color();
+						color.setHSL( 6000 / particles, 1.0, 0.5 );
 
-				// 		colors[ count * 3 + 0 ] = color.r;
-				// 		colors[ count * 3 + 1 ] = color.g;
-				// 		colors[ count * 3 + 2 ] = color.b;
+						colors[ count * 3 + 0 ] = color.r;
+						colors[ count * 3 + 1 ] = color.g;
+						colors[ count * 3 + 2 ] = color.b;
 
-				// 		sizes[ count ] = 2 * psize;
-				// 		count ++;
+						sizes[ count ] = 2 * psize;
+						count ++;
 
-		  //       	}
-		  //       }
+		        	}
+		        }
 
-				for ( var i = 0, i3 = 0; i < particles; i ++, i3 += 3 ) {
+				// for ( var i = 0, i3 = 0; i < particles; i ++, i3 += 3 ) {
 
-					positions[ i3 + 0 ] = ( Math.random() * 2 - 1 ) * radius;
-					positions[ i3 + 1 ] = ( Math.random() * 2 - 1 ) * radius;
-					positions[ i3 + 2 ] = ( Math.random() * 2 - 1 ) * radius;
+				// 	positions[ i3 + 0 ] = ( Math.random() * 2 - 1 ) * radius;
+				// 	positions[ i3 + 1 ] = ( Math.random() * 2 - 1 ) * radius;
+				// 	positions[ i3 + 2 ] = ( Math.random() * 2 - 1 ) * radius;
 
-					var color = new THREE.Color();
-					color.setHSL( 6000 / particles, 1.0, 0.5 );
+				// 	var color = new THREE.Color();
+				// 	color.setHSL( 6000 / particles, 1.0, 0.5 );
 
-					colors[ i3 + 0 ] = color.r;
-					colors[ i3 + 1 ] = color.g;
-					colors[ i3 + 2 ] = color.b;
+				// 	colors[ i3 + 0 ] = color.r;
+				// 	colors[ i3 + 1 ] = color.g;
+				// 	colors[ i3 + 2 ] = color.b;
 
-					sizes[ i ] = 2 * psize;
+				// 	sizes[ i ] = 2 * psize;
 
-				}
+				// }
 
 				geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
 				geometry.addAttribute( 'customColor', new THREE.BufferAttribute( colors, 3 ) );

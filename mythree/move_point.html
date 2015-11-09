@@ -8,6 +8,7 @@
 		<script type="text/javascript" src="./libs/stats.js"></script>
 		<script type="text/javascript" src="./libs/dat.gui.js"></script>
 		<script type="text/javascript" src="./libs/controls/OrbitControls.js"></script>
+		<script type="text/javascript" src="./js/Interaction.js"></script>
 		<style >
 			body{
 				/* set margin to 0 and overflow to hidden, to use the complete page */
@@ -64,11 +65,11 @@
  				scene.add(spotLight);
 
  				//add plane
- 				plane = new THREE.Mesh(
-					new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
-					new THREE.MeshBasicMaterial( { visible: false } )
-				);
-				scene.add( plane );
+ 			// 	plane = new THREE.Mesh(
+				// 	new THREE.PlaneBufferGeometry( 2000, 2000, 8, 8 ),
+				// 	new THREE.MeshBasicMaterial( { visible: false } )
+				// );
+				// scene.add( plane );
  				// var planeGeo = new THREE.PlaneGeometry(60,40,1,1);
  				// var planeMtr = new THREE.MeshLambertMaterial({color: 0xffffff});
  				// var plane = new THREE.Mesh(planeGeo, planeMtr);
@@ -79,22 +80,22 @@
 		   //      plane.receiveShadow = true;
 		        // scene.add(plane);
 
-		        camera.position.x = -10;
-		        camera.position.y = 10;
-		        camera.position.z = 10;
+		        camera.position.x = -5;
+		        camera.position.y = 5;
+		        camera.position.z = 5;
 		        camera.lookAt(scene.position);
 		        document.getElementById("WebGL-output").appendChild(renderer.domElement);
 
-		        document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-		        document.addEventListener( 'mousedown', onDocumentMouseDown, false );
-		        document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+		        // document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		        // document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+		        // document.addEventListener( 'mouseup', onDocumentMouseUp, false );
 		        window.addEventListener( 'resize', onWindowResize, false );
 
 		        //add spheres
 		        var spheres = [];
 
 		        var radius = 0.1;
-		        var range = 10;
+		        var range = 3;
 		        var material = new THREE.MeshLambertMaterial({color: 0xaaccff});
 		        for(var i = 0; i < 2; i++){
 		        	var geom = new THREE.SphereGeometry(radius, 30, 30);
@@ -119,18 +120,18 @@
 		        // 	[0]
 		        // ];
 
-		        var lineMaterial = new THREE.LineBasicMaterial({
-		        	color: 0xffffff,
-		        	opacity: 1,
-		        	linewidth: 3,
-		        	vertexColors: THREE.VertexColors
-		        });
+		        // var lineMaterial = new THREE.LineBasicMaterial({
+		        // 	color: 0xffffff,
+		        // 	opacity: 1,
+		        // 	linewidth: 3,
+		        // 	vertexColors: THREE.VertexColors
+		        // });
 
-		        var geom = new THREE.Geometry();
-		        geom.vertices.push(spheres[0].position);
-		        geom.vertices.push(spheres[1].position);
-		        var line = new THREE.Line(geom, lineMaterial);
-		        scene.add(line);
+		        // var geom = new THREE.Geometry();
+		        // geom.vertices.push(spheres[0].position);
+		        // geom.vertices.push(spheres[1].position);
+		        // var line = new THREE.Line(geom, lineMaterial);
+		        // scene.add(line);
 
 		        // for(var i = 0; i < 10; i++){
 		        // 	var linepoint = link[i];
@@ -161,6 +162,8 @@
 				//Controls
 				controls = new THREE.OrbitControls(camera, renderer.domElement);
 
+				var interaction = new THREE.Interaction(spheres, controls, camera, scene, renderer.domElement);
+				interaction.init();
 
  				//add animation
  				render();
@@ -169,6 +172,7 @@
 
  					stats.update();
  					controls.update();
+ 					interaction.update();
 
  					requestAnimationFrame(render);
  					renderer.render(scene, camera);
